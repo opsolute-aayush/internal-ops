@@ -1,6 +1,6 @@
 {
   "name": "internal-ops",
-  "version": "0.3.0",
+  "version": "1.1.1",
   "private": true,
   "scripts": {
     "start:event": "bash scripts/run.sh",

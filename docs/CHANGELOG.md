@@ -1,2 +1,73 @@
 # Changelog
 
+## [1.1.1] - 2026-09-11
+
+### Changes
+- Fix release workflow: stop anchoring the changelog insert to prose text
+- Remove outdated changelog entries and streamline the document for future updates
+- Move docs into docs/, automate the changelog/version bump via the release workflow
+- Rename project from opday-ctf to internal-ops
+- Add CHANGELOG.md, bump version to 0.2.0
+- Add deployment runbook, trim README
+- Add a mission-select home screen for picking between games
+- Finish wiring Glitch Out's moved routes, assets and imports
+- Fix each level's cipher decoding to its own password, not the next one's
+- Harden auth: device-bound rejoin tokens, secure cookies, JWT alg pinning
+- Wire Ye Lee generation to the next level's password field
+- Make hint requests spend a credit every time, not just once per level
+- Keep the level hint visible until the team actually advances past that level
+- Add help credits configuration for game sessions and update related APIs
+- Refine feedback rules: ensure sound plays for wrong password and clarify video behavior
+- Bust GitHub's cached camo image for the status badge
+- Add Docker pulls and self-hosted live-status badges
+- Add a low-key Report Issue link to home and play pages
+- Auto-seed cipher hints on startup, colorize difficulty buttons, drop provenance manifests
+- Surface failures when deleting old Docker Hub tags instead of hiding them
+- Add Medium/Hard ciphers with team hints, relocate docs, drop em dashes repo-wide
+- Randomize easy-level cipher technique, split cipher scripts into common folder
+- Switch releases to manual, version-tagged Docker Hub pushes
+- Remove explanatory comment block from docker-publish workflow
+- Move cipher pipeline details to cipher.md, trim README wording
+- Match CI build/push to the manual release command, document it and the cipher pipeline in README
+- Add GitHub Actions workflow to build and push the Docker image on push to main
+- Fix Ye Lee box styling and completed-badge overlap, verified visually
+- Box the Ye Lee display, show a "Done" badge for finished squads on register
+- Add Play Again button to winner page
+- Harden lobby-presence heartbeat, make Ye Lee a required field
+- Add Home link to winner page, switch lobby presence color to white
+- Show session-joined players before they pick a team, fix duplicate winning video
+- Decouple Ye Lee from the level's own password
+- Add persisted per-level cipher field, video monitor on winner page, session code in settings, sabotage feedback fix
+- feat: add cipher generation process documentation with detailed encryption layers
+- Add passphrase cipher tool, fix stale connected-players comment, auto-expire idle sessions
+- feat: implement winner page with interactive ASCII portrait and sound feedback
+- feat: add new intro sound effect for enhanced user experience
+- feat: update sound effects and animations for winner page
+- Fix: restore collectedWords column to prevent a container startup crash
+- Add hacking/alert sound cues, remove dead code, consolidate shared hooks
+- Add production VM deployment: nginx + Let's Encrypt + Watchtower
+- Remove unused cyberpunk PNG assets and add new green screen video
+- Add progress-swap feature, restyle rules panel, simplify Docker setup
+- Fix video audio, add sabotage cooldown, redesign settings art layout
+- Fix muted-video autoplay bug, unify glitch transitions, admin sound tab
+- Add team sabotage feature, player identity system, and cyberpunk UI overhaul
+- Clear roster on leave, reposition right_pass video, calm ambient background
+- Fix join getting silently rejected over plain-http LAN deployment
+- Fix concurrent-join race, scope click sound to navigation, enhance glitch effect
+- Add glitch route transitions, sound/video feedback policy, click sounds, settings music
+- Show live member presence on the register page
+- Reorganize project layout, add Docker Compose, rewrite README
+- Add multi-session support, team colors, media/settings, and fix seed data
+- Gate level progression on word verification, restyle join flow, add video clips and intro/outro music
+- Require typing the found word to actually collect it, not just the password
+- Default to typing, drop pre-set team names, self-service hints, transitions, leave-team
+- Auto-discover sound files, raise attempt limit, add live team stats sidebar
+- Admin-numbered teams, non-blocking wins, avatars, segregated sounds, animation pass
+- Redesign the password modal into a hacker-terminal breach console
+- Make team creation admin-only; players join instead of registering
+- Add Dockerfile for single-image cloud deployment
+- Give every team its own independent puzzle and final sentence
+- Build OP Day CTF scavenger hunt app
+- Initial commit
+- Initial commit from Create Next App
+
