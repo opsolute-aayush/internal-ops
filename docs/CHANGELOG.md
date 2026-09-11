@@ -1,6 +1,8 @@
 # Changelog
 
-Every push to `main` gets an entry here: the version bump and what changed.
+A new entry lands here automatically whenever **Actions → Build and push
+Docker image** is run — never edited by hand. See that workflow
+(`.github/workflows/docker-publish.yml`) for exactly what it does.
 Newest at the top.
 
 ## [0.3.0] - 2026-09-11

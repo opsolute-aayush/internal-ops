@@ -1,6 +1,6 @@
 # Cipher
 
-[← Back to README](../../README.md)
+[← Back to README](../README.md)
 
 Every level has a **Ye Lee** field: a Base64 string a team decodes to get the next level's password.
 
@@ -36,4 +36,4 @@ Admin dashboard → Team Management → **cipher-selector.sh**. Type the word, h
 
 To add a technique: write the spec here, add the file in `src/lib/ciphers/` (with both `encode()` and `decode()`), register it in `registry.ts`.
 
-[← Back to README](../../README.md)
+[← Back to README](../README.md)

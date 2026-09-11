@@ -30,7 +30,7 @@ services:
   # Restarts any container labeled autoheal=true the moment Docker marks it
   # unhealthy, by watching the socket — not just when it fully exits. Pairs
   # with the `app` healthcheck above, which otherwise has nothing acting on
-  # it. See DEPLOYMENT.md's "If something goes down" section.
+  # it. See docs/DEPLOYMENT.md's "If something goes down" section.
   autoheal:
     container_name: internal-ops-autoheal
     image: willfarrell/autoheal

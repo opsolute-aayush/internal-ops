@@ -9,7 +9,7 @@
 #     internal-ops
 #
 # No admin password to pass in — each game session gets its own, shown once
-# when you create it at /glitch-out/admin. See README.md for the full guide.
+# when you create it at /glitch-out/admin. See docs/README.md for the full guide.
 
 FROM node:22-slim AS base
 WORKDIR /app

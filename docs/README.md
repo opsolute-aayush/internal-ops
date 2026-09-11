@@ -106,7 +106,7 @@ No admin password to set up front — each session generates its own, shown once
 - **Team colors**: a neon swatch picker at join time or from `/glitch-out/play`.
 - **Self-service hints**: 2 free per team; the admin can also release one for free.
 - **Live leaderboard**: every player sees everyone's progress.
-- **Sound, video, music**: drop files into `public/sounds/<category>/` or `public/videos/<category>/` and they auto-play — no code changes needed.
+- **Sound, video, music**: drop files into `public/glitch-out/sounds/<category>/` or `public/glitch-out/videos/<category>/` and they auto-play — no code changes needed.
 - **Player settings** at `/glitch-out/settings`: mute or adjust volume per device.
 - **Non-blocking wins**: one team finishing doesn't stop the hunt for others — only the admin's **End Game** does.
 
@@ -114,7 +114,7 @@ No admin password to set up front — each session generates its own, shown once
 
 Each level's **Ye Lee** field is a Base64 string that decodes to that same level's password — solving it unlocks that level, never the one ahead. Generated from the admin dashboard, which picks a random technique per difficulty and shows the admin which one it used.
 
-Details: **[docs/cipher/README.md](docs/cipher/README.md)**.
+Details: **[cipher/README.md](cipher/README.md)**.
 
 ## Security
 
@@ -126,26 +126,36 @@ Details: **[docs/cipher/README.md](docs/cipher/README.md)**.
 ## Project structure
 
 ```
-docs/cipher/     Per-difficulty cipher technique specs
+docs/            README.md (this file), DEPLOYMENT.md, CHANGELOG.md,
+                 cipher/ (per-difficulty cipher technique specs)
 docker/          Dockerfile, docker-compose.yml, docker-compose.prod.yml,
                  certbot-init.sh, nginx/app.conf
-scripts/         run.sh, docker-entrypoint.sh, compose-up.sh
+scripts/         run.sh, docker-entrypoint.sh, compose-up.sh,
+                 update-changelog.py (used by the release workflow only)
 prisma/          schema.prisma
 src/
   app/           / is the mission-select home screen (one card per game).
                  Each game gets its own top-level folder with its full route
-                 tree nested inside — today that's app/glitch-out/{register,
-                 play,final,winner,admin,settings}. A new game is a sibling
-                 folder next to glitch-out/, not more routes inside it.
-  app/api/       API routes (not game-namespaced; shared backend)
+                 tree AND its own always-mounted layout effects nested
+                 inside — today that's app/glitch-out/{register,play,final,
+                 winner,admin,settings,layout.tsx,page.tsx}. A new game is a
+                 sibling folder next to glitch-out/, not more routes inside it.
+  app/api/       API routes — /api/glitch-out/* is that game's own asset
+                 routes (sounds/videos/arts); the rest is shared backend
+  app/upcoming/  Placeholder page for games not yet started
   data/          games.ts — the home screen's roster (id, title, status,
                  href, ...), one entry per game/card
-  components/    UI components
+  components/    Shared UI primitives; components/glitch-out/ is that
+                 game's own (not shared with other games)
+  hooks/         useReducedMotion, useLazyScroll — shared across the home
+                 screen and every game's own layout
   lib/           Auth, sessions, game logic, sound/video/settings
   lib/ciphers/   One script per cipher technique + registry picking randomly per difficulty
 public/
-  sounds/        Auto-discovered audio, by category
-  videos/        Auto-discovered green-screen clips, by category
+  glitch-out/
+    sounds/      Auto-discovered audio, by category
+    videos/      Auto-discovered green-screen clips, by category
+    arts/        ASCII-portrait source images
 ```
 
 ## Scaling

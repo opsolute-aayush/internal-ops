@@ -14,6 +14,11 @@ name: Build and push Docker image
 # auto-update. Refuses to overwrite a version that's already published, and
 # deletes every other version tag from Docker Hub afterward so old images
 # don't pile up (git history is the record of what changed, not Docker Hub).
+#
+# This is also the ONLY place docs/CHANGELOG.md and package.json's version
+# get bumped — never do it by hand in a regular commit. That keeps the
+# changelog's version and package.json's version from ever drifting apart:
+# one always matches whatever was actually published to Docker Hub.
 
 on:
   workflow_dispatch:
@@ -23,12 +28,17 @@ on:
         required: true
         type: string
 
+permissions:
+  contents: write
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Validate version format
         run: |
@@ -36,6 +46,31 @@ jobs:
             echo "::error::Version must be x.y.z (got '${{ inputs.version }}')"
             exit 1
           fi
+
+      # Local file edits only (package.json/package-lock.json) — no network,
+      # nothing committed yet. Committed for real in "Commit release" below,
+      # only once the image has actually been built and pushed.
+      - name: Bump package.json version
+        run: npm version "${{ inputs.version }}" --no-git-tag-version --allow-same-version
+
+      # Auto-generated from the commit log since the last vX.Y.Z tag — a
+      # plain record of what shipped, not hand-curated prose. Written to
+      # disk now; committed alongside the version bump in "Commit release".
+      # (Logic lives in scripts/update-changelog.py, not inlined here — a
+      # multi-line Python script inside a YAML block scalar is a
+      # significant-whitespace minefield.)
+      - name: Update docs/CHANGELOG.md
+        run: |
+          PREV_TAG=$(git tag --list 'v*' --sort=-v:refname | head -n1)
+          if [ -n "$PREV_TAG" ]; then
+            LOG=$(git log "${PREV_TAG}..HEAD" --no-merges --pretty='- %s')
+          else
+            LOG=$(git log --no-merges --pretty='- %s')
+          fi
+          if [ -z "$LOG" ]; then
+            LOG="- No commits since ${PREV_TAG:-the beginning of history}."
+          fi
+          RELEASE_VERSION="${{ inputs.version }}" RELEASE_LOG="$LOG" python3 scripts/update-changelog.py
 
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
@@ -95,3 +130,16 @@ jobs:
           if [ "$FAILED" = "1" ]; then
             echo "::warning::One or more old tags could not be deleted. The new release still published fine, this is cleanup-only."
           fi
+
+      # Only reached once the image is actually published — so a failed
+      # build/push never leaves behind a version bump or changelog entry
+      # for a release that didn't happen.
+      - name: Commit release
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json docs/CHANGELOG.md
+          git commit -m "Release v${{ inputs.version }}"
+          git tag "v${{ inputs.version }}"
+          git push origin HEAD:main
+          git push origin "v${{ inputs.version }}"
