@@ -5,7 +5,7 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/aayushop/opday-ctf?label=pulls&logo=docker)](https://hub.docker.com/r/aayushop/opday-ctf)
 [![Status](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fopsolute-aayush%2Fop_day_ctf%2Fstatus%2Fstatus.json&cacheSeconds=300)](https://aegios.co.in)
 
-A physical + digital scavenger hunt. Teams decode a cipher, find hidden word cards, and race to build a final sentence. One self-contained Next.js app, no external services needed.
+A physical + digital scavenger hunt. Teams decode a cipher, find hidden word cards, and race to build a final sentence. Self-contained Next.js app, no external services needed.
 
 ## Quick start
 
@@ -13,30 +13,29 @@ A physical + digital scavenger hunt. Teams decode a cipher, find hidden word car
 npm run start:event
 ```
 
-Installs everything, sets up the database, and opens the app. Safe to re-run anytime.
+Installs everything, sets up the database, opens the app. Safe to re-run anytime.
 
 ## How it works
 
-- A **Game Master** creates a **session** at `/admin` and gets a 6-digit code + password (shown once).
-- **Players** enter that code at `/register`, pick a team, and play at `/play`.
-- One deployment can run many sessions at once, each fully separate (own teams, puzzles, leaderboard).
-- Each team has its own passwords, clues, words, and final sentence. Teams can't share answers.
-- A correct password reveals a location clue. The team must then type the exact word found there to collect it and move on.
+- `/` is the mission-select home screen — one card per game. Today that's just **Glitch Out**; more games get their own top-level folder next to it (see **Project structure**) as they're built.
+- The **Game Master** creates a session at `/glitch-out/admin` and gets a 6-digit code + password (shown once).
+- **Players** enter that code at `/glitch-out/register`, pick a team, and play at `/glitch-out/play`.
+- One deployment can run several sessions at once, each fully separate.
+- Each team has its own passwords, clues, words, and final sentence — no shared answers.
+- A correct password reveals a location clue. The team types the exact word found there to collect it and move on.
 
 ## Running it
 
-### 1. Local development
+**Local dev:**
 
 ```bash
 npm install
-cp .env.example .env        # set JWT_SECRET
+cp .env.example .env    # set JWT_SECRET
 npm run db:push
-npm run dev                  # → http://localhost:3000
+npm run dev              # → http://localhost:3000
 ```
 
-### 2. Docker (single container)
-
-Build and run on the same machine:
+**Docker (single container):**
 
 ```bash
 docker build -f docker/Dockerfile -t opday-ctf .
@@ -46,32 +45,20 @@ docker run -d -p 3000:3000 \
   opday-ctf
 ```
 
-Open `http://localhost:3000/admin` → **Create New Session**.
+Open `http://localhost:3000/glitch-out/admin` → **Create New Session**. The volume keeps your data and `JWT_SECRET` across restarts.
 
-The `-v opday_data:/app/data` volume keeps the SQLite file (and your `JWT_SECRET`) across restarts.
-
-Need a different machine/VM, a real domain, HTTPS, and auto-updates instead of plain HTTP? See **Deploying on a VM** below. It already builds and pushes `aayushop/opday-ctf` via GitHub Actions.
-
-### 3. Docker Compose (recommended: same steps on a laptop or a VM)
+**Docker Compose (a laptop or a VM):**
 
 ```bash
 git clone <this repo> && cd opday-ctf
 npm run compose:up
 ```
 
-That's the whole setup. One command creates `.env`, generates a `JWT_SECRET`, detects the machine's IP, builds the image, and starts it on port 80. Open the printed URL, e.g. `http://<IP>/admin`, and create a session.
+One command: creates `.env`, generates a secret, detects the machine's IP, builds, and starts on port 80. On a cloud VM, also open port 80 in its firewall and share its **public** IP.
 
-**On a cloud VM**, also:
+Custom domain: point its DNS **A record** at the VM's IP. On shared venue wifi instead, run `npm run compose:dns` or add `<IP> aegios.co.in` to each device's hosts file.
 
-- Open port 80 in the VM's firewall / security group.
-- Share the VM's **public** IP with players, not the private one the script detects (that's only for shared venue wifi, below).
-
-**Custom domain (`aegios.co.in`):**
-
-- Shared venue wifi → run `npm run compose:dns`, or add `<IP> aegios.co.in` to each device's hosts file.
-- Real internet domain → point its DNS **A record** at the VM's public IP (Docker can't do this step for you).
-
-### 4. A cloud host without Docker (Render, Fly.io, a VPS)
+**A host without Docker** (Render, Fly.io, a VPS):
 
 ```bash
 npm install && npm run build
@@ -79,93 +66,15 @@ npm run db:push
 npm start
 ```
 
-Set `JWT_SECRET` in the platform's env vars and mount a persistent disk (the SQLite file must survive restarts).
+Set `JWT_SECRET` in the platform's env vars, and use a persistent disk — the SQLite file must survive restarts.
 
-## Deploying on a VM (production, HTTPS, auto-updating)
+## Deploying to production (HTTPS, auto-updating, a real domain)
 
-Full production setup for a real domain: nginx handles HTTPS for `aegios.co.in`, Let's Encrypt issues and renews the cert, and Watchtower auto-updates the app on every new image. No repo clone needed on the VM, just the `docker/` folder, and nothing to run there again after setup.
+`docker-compose.prod.yml` runs the app behind nginx (HTTPS via Let's Encrypt) with Watchtower auto-updating it on every new image.
 
-**Before starting:**
-- `aegios.co.in`'s DNS A record already points at the VM's public IP.
-- Ports 80 and 443 are open (Security Group, on AWS).
+**[DEPLOYMENT.md](DEPLOYMENT.md)** has the full copy-pasteable setup, plus how it recovers on its own from crashes, reboots, and stale images — and what to do if the instance itself goes down. Start there for a fresh cloud instance.
 
-**1. Install Docker + the Compose plugin** (Amazon Linux 2023, amd64):
-
-```bash
-sudo dnf install -y docker
-sudo systemctl enable --now docker
-sudo usermod -aG docker $USER   # log out and back in after this
-mkdir -p ~/.docker/cli-plugins
-curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 \
-  -o ~/.docker/cli-plugins/docker-compose
-chmod +x ~/.docker/cli-plugins/docker-compose
-```
-
-**2. Copy just the `docker/` folder to the VM** (scp/rsync, no clone needed):
-
-```bash
-scp -r docker/ your-vm:~/opday-ctf/
-```
-
-**3. Create `docker/.env`** on the VM:
-
-```bash
-cd ~/opday-ctf/docker
-cat > .env <<EOF
-JWT_SECRET=$(openssl rand -base64 48)
-LETSENCRYPT_EMAIL=you@example.com
-DOCKER_IMAGE=aayushop/opday-ctf
-DOCKER_TAG=latest
-EOF
-```
-
-**4. Bootstrap the Let's Encrypt certificate (once):**
-
-```bash
-./certbot-init.sh
-```
-
-**5. Start the stack:**
-
-```bash
-docker compose -p opday-ctf -f docker-compose.prod.yml up -d
-```
-
-Open `https://aegios.co.in/admin` → **Create New Session**.
-
-**Releasing an update is manual, by version.** Go to **Actions → Build and push Docker image → Run workflow**, and type a version. Nothing publishes on its own. You choose when and what version.
-
-Versioning is `x.y.z`:
-- **x**: major change or new feature
-- **y**: UI change, placement, or fix
-- **z**: bug fix
-
-The workflow builds and pushes both `aayushop/opday-ctf:<version>` and `aayushop/opday-ctf:latest`. Watchtower on the VM watches `latest` (that's `DOCKER_TAG`'s default), so it auto-updates within 5 minutes of a release, nothing to run on the VM. It also refuses to reuse a version that's already published. It deletes every other version tag from Docker Hub after a successful push, so old images don't pile up.
-
-The workflow needs two repo secrets, set once under **Settings → Secrets and variables → Actions**:
-
-| Secret | Value |
-|---|---|
-| `DOCKERHUB_USERNAME` | Docker Hub username (`aayushop`) |
-| `DOCKERHUB_TOKEN` | A Docker Hub **access token** with Read/Write/Delete scope (Account Settings → Personal access tokens). Delete is needed to prune old version tags |
-
-To build and push by hand instead (CI down, or testing before secrets are set):
-
-```bash
-docker buildx build --platform linux/amd64 -f docker/Dockerfile \
-  -t aayushop/opday-ctf:<version> -t aayushop/opday-ctf:latest --push .
-```
-
-**What's running:**
-
-| Service | Job |
-|---|---|
-| `app` | The game itself, only reachable through `nginx`, never exposed directly |
-| `nginx` | Handles HTTPS, redirects port 80 → 443, reloads every 12h for renewed certs |
-| `certbot` | Renews the Let's Encrypt cert every 12h |
-| `watchtower` | Checks Docker Hub every 5 min; pulls + restarts `app` when a new image lands |
-
-**Status badge:** `.github/workflows/status-badge.yml` pings `aegios.co.in` every 15 min and publishes Operational/Degraded/Down to the `status` branch, shown as the **Status** badge above. Update `CHECK_URL` in that workflow if the domain changes. It only reflects reality while the VM is actually running; expect "Down" between events unless something stays up in between.
+Releasing an update is manual and by version: **Actions → Build and push Docker image → Run workflow**. Watchtower on the server picks it up within 5 minutes. Versioning is `x.y.z` — **x** major/new feature, **y** UI change, **z** bug fix.
 
 ## Environment variables
 
@@ -173,12 +82,12 @@ docker buildx build --platform linux/amd64 -f docker/Dockerfile \
 |---|---|---|
 | `DATABASE_URL` | yes | SQLite file path, e.g. `file:./dev.db` |
 | `JWT_SECRET` | yes | Signs session tokens. Rotating it logs everyone out. |
-| `NODE_ENV` | prod only | Set to `production` behind HTTPS so cookies are marked `Secure`. |
-| `HOST_IP` | no | LAN IP for the Docker Compose `dns` profile, auto-set by `npm run compose:up`/`compose:dns`; only set by hand to override. |
-| `DOCKER_IMAGE` / `DOCKER_TAG` | `docker-compose.prod.yml` only | Which pushed image to pull, e.g. `aayushop/opday-ctf` / `latest`. |
-| `LETSENCRYPT_EMAIL` | `docker-compose.prod.yml` only | Email for Let's Encrypt renewal/expiry notices. |
+| `COOKIE_SECURE` | prod only | `true` only when actually served over HTTPS (already set in `docker-compose.prod.yml`). Leave unset for plain-http venue wifi. |
+| `HOST_IP` | no | LAN IP for the Compose `dns` profile; auto-set by `compose:up`/`compose:dns`. |
+| `DOCKER_IMAGE` / `DOCKER_TAG` | prod only | Which pushed image to pull. |
+| `LETSENCRYPT_EMAIL` | prod only | Email for cert renewal/expiry notices. |
 
-No admin password to set up front. Each session generates its own, changeable anytime from the dashboard's Security tab.
+No admin password to set up front — each session generates its own, shown once, changeable anytime from the dashboard's Security tab.
 
 ## Scripts
 
@@ -194,37 +103,43 @@ No admin password to set up front. Each session generates its own, changeable an
 
 ## Features
 
-- **Teams pick their own color**: a neon swatch picker at join time or from `/play`.
-- **Self-service hints**: 2 free hints per team; the admin can also release one for free.
-- **Live leaderboard**: every player sees everyone's progress, not just the admin.
-- **Sound, video, music**: drop files into `public/sounds/<category>/` or `public/videos/<category>/` (`wrong_pass`, `right_pass`, `help`, `winning`, `hacking`, `alert`, plus `intro`/`outro` for music) and they auto-play. No code changes needed. `hacking` plays for the team that just launched a sabotage or swap; `alert` plays for the team on the other end.
-- **Player settings** at `/settings`: mute or adjust volume per device.
-- **Non-blocking wins**: a team finishing doesn't stop the hunt for others. Only the admin's **End Game** does that.
+- **Team colors**: a neon swatch picker at join time or from `/glitch-out/play`.
+- **Self-service hints**: 2 free per team; the admin can also release one for free.
+- **Live leaderboard**: every player sees everyone's progress.
+- **Sound, video, music**: drop files into `public/sounds/<category>/` or `public/videos/<category>/` and they auto-play — no code changes needed.
+- **Player settings** at `/glitch-out/settings`: mute or adjust volume per device.
+- **Non-blocking wins**: one team finishing doesn't stop the hunt for others — only the admin's **End Game** does.
 
 ## Cipher
 
-Each level's **Ye Lee** field holds a Base64 string that decodes to the next level's password. Made from the admin dashboard's Team Management tab, which randomly picks a technique (Easy has 2) and shows the admin which one it used.
+Each level's **Ye Lee** field is a Base64 string that decodes to that same level's password — solving it unlocks that level, never the one ahead. Generated from the admin dashboard, which picks a random technique per difficulty and shows the admin which one it used.
 
-Full details: **[docs/cipher/README.md](docs/cipher/README.md)**.
+Details: **[docs/cipher/README.md](docs/cipher/README.md)**.
 
 ## Security
 
-- Team/session creation and joins are validated server-side, not just in the UI.
-- A team's password, clues, and words are scoped to its own session and team ID, with no cross-session or cross-team access, even with a guessed ID.
-- The winning sentence and word rewards are never sent to the client before they're earned.
-- Passwords and session credentials are bcrypt-hashed; sensitive comparisons happen server-side only.
+- Every request is validated server-side, not just in the UI.
+- A team's passwords, clues, and words are scoped to its own session and team — no cross-team access, even with a guessed ID.
+- Winning sentences and word rewards are never sent to the client before they're earned.
+- Passwords and session credentials are bcrypt-hashed; sensitive checks happen server-side only.
 
 ## Project structure
 
 ```
-docs/cipher/     Per-difficulty cipher technique specs (see docs/cipher/README.md)
+docs/cipher/     Per-difficulty cipher technique specs
 docker/          Dockerfile, docker-compose.yml, docker-compose.prod.yml,
                  certbot-init.sh, nginx/app.conf
 scripts/         run.sh, docker-entrypoint.sh, compose-up.sh
 prisma/          schema.prisma
 src/
-  app/           Pages: /, /register, /play, /final, /winner, /admin, /settings
-  app/api/       API routes
+  app/           / is the mission-select home screen (one card per game).
+                 Each game gets its own top-level folder with its full route
+                 tree nested inside — today that's app/glitch-out/{register,
+                 play,final,winner,admin,settings}. A new game is a sibling
+                 folder next to glitch-out/, not more routes inside it.
+  app/api/       API routes (not game-namespaced; shared backend)
+  data/          games.ts — the home screen's roster (id, title, status,
+                 href, ...), one entry per game/card
   components/    UI components
   lib/           Auth, sessions, game logic, sound/video/settings
   lib/ciphers/   One script per cipher technique + registry picking randomly per difficulty
@@ -235,4 +150,4 @@ public/
 
 ## Scaling
 
-Built for one Node.js process (a laptop or small VM), the realistic setup for a one-day internal event. Rate limiting is in-memory and "realtime" updates are polling, both fine at this scale. Deploy to a platform with a persistent disk and a long-running process (Render, Fly.io, a VPS, or Docker with a volume), not stateless serverless, since the SQLite file needs to persist.
+Built for one Node.js process — a laptop or small VM, for a one-day internal event. Rate limiting is in-memory and updates are polling; both are fine at this scale. Deploy anywhere with a persistent disk and a long-running process (Render, Fly.io, a VPS, or Docker with a volume) — not stateless serverless, since the SQLite file needs to persist.
