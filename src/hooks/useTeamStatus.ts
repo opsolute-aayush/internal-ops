@@ -9,8 +9,6 @@ export interface UnlockedClue {
   // Unlocking the level via password alone never reveals it.
   wordReward?: string;
   hint?: string;
-  // "Ye Lee": admin-authored, holds the *next* level's encoded password.
-  cipherMessage?: string;
 }
 
 export interface ActiveSabotage {
@@ -31,6 +29,10 @@ export interface TeamStatus {
   unlockedLevels: number[];
   collectedWords: string[];
   unlockedClues: UnlockedClue[];
+  // "Ye Lee": this level's own encoded password. Only set while currentLevel
+  // is still locked — it's the puzzle to solve to unlock it, not a reward
+  // for already having done so.
+  currentLevelCipherMessage: string | null;
   finalUnlocked: boolean;
   activeHint: string | null;
   hintAvailable: boolean;

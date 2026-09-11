@@ -136,10 +136,6 @@ export async function buildTeamStatus(teamId: string) {
 
   // wordReward is only included once the team has confirmed it via
   // verify-word. A correct password alone never leaks the word text.
-  // cipherMessage ("Ye Lee") is admin-authored per level and holds the
-  // *next* level's encoded password. Surfacing it once this level unlocks
-  // is what lets a team start decoding their way into the level after this
-  // one, same gating as locationClue/wordReward.
   const unlockedClues = levelConfigs
     .filter((lc) => unlockedLevels.includes(lc.levelNumber))
     .map((lc) => ({
@@ -147,7 +143,6 @@ export async function buildTeamStatus(teamId: string) {
       locationClue: lc.locationClue,
       wordReward: verifiedWordLevels.includes(lc.levelNumber) ? lc.wordReward : undefined,
       hint: lc.hint ?? undefined,
-      cipherMessage: lc.cipherMessage ?? undefined,
     }));
 
   const collectedWords = levelConfigs
@@ -168,6 +163,15 @@ export async function buildTeamStatus(teamId: string) {
   // Lets the client only show the "Ask for a Hint" button when it would
   // actually do something.
   const hintAvailable = Boolean(currentLevelConfig?.hint) && !finalUnlocked;
+
+  // "Ye Lee": admin-authored per level, decodes to THAT SAME level's own
+  // password. Surfaced as soon as it's the team's current level (before
+  // they've unlocked it) since it's the puzzle they need to solve to get in,
+  // not a reward for already unlocking it. Dropped again once unlocked.
+  const currentLevelCipherMessage =
+    currentLevelConfig && !unlockedLevels.includes(progress.currentLevel)
+      ? currentLevelConfig.cipherMessage ?? null
+      : null;
 
   // Computed server-side (not just "cooldown seconds - client clock guess")
   // so the countdown the player sees can't drift from clock skew or from
@@ -194,6 +198,7 @@ export async function buildTeamStatus(teamId: string) {
     unlockedLevels,
     collectedWords,
     unlockedClues,
+    currentLevelCipherMessage,
     finalUnlocked,
     activeHint,
     hintAvailable,

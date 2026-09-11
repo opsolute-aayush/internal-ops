@@ -35,7 +35,7 @@ const createSchema = z.object({
   wordReward: z.string().min(1).max(200),
   hint: z.string().max(2000).optional(),
   // "Ye Lee": required, same as locationClue/wordReward. It's the display
-  // field that shows this team the *next* level's encoded password.
+  // field that shows this team THIS level's own encoded password.
   cipherMessage: z.string().min(1).max(4000),
 });
 

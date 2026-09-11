@@ -4,19 +4,19 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { LogOut, Trophy, Flag, Pencil, Check, X, Settings } from "lucide-react";
+import { LogOut, Trophy, Flag, Pencil, Check, X, Settings, Home } from "lucide-react";
 import { useTeamStatus } from "@/hooks/useTeamStatus";
 import { useGlitchKey } from "@/hooks/useGlitchKey";
 import GlitchTitle from "@/components/GlitchTitle";
 import TerminalPanel from "@/components/TerminalPanel";
-import LevelCard, { LevelCardState, WordVerifyResult } from "@/components/LevelCard";
-import PasswordModal from "@/components/PasswordModal";
-import TeamAvatar from "@/components/TeamAvatar";
-import TeamStatsPanel from "@/components/TeamStatsPanel";
-import ActiveSessionPanel from "@/components/ActiveSessionPanel";
-import PlayerStatsPanel from "@/components/PlayerStatsPanel";
-import GameRules from "@/components/GameRules";
-import SabotageModal from "@/components/SabotageModal";
+import LevelCard, { LevelCardState, WordVerifyResult } from "@/components/glitch-out/LevelCard";
+import PasswordModal from "@/components/glitch-out/PasswordModal";
+import TeamAvatar from "@/components/glitch-out/TeamAvatar";
+import TeamStatsPanel from "@/components/glitch-out/TeamStatsPanel";
+import ActiveSessionPanel from "@/components/glitch-out/ActiveSessionPanel";
+import PlayerStatsPanel from "@/components/glitch-out/PlayerStatsPanel";
+import GameRules from "@/components/glitch-out/GameRules";
+import SabotageModal from "@/components/glitch-out/SabotageModal";
 import ColorPicker from "@/components/ColorPicker";
 import ReportIssueButton from "@/components/ReportIssueButton";
 import { getPlayerName } from "@/lib/playerIdentity";
@@ -39,11 +39,11 @@ export default function PlayPage() {
   const lastSwapAlertRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (unauthorized) router.replace("/register");
+    if (unauthorized) router.replace("/glitch-out/register");
   }, [unauthorized, router]);
 
   useEffect(() => {
-    if (status?.completed) router.replace("/winner");
+    if (status?.completed) router.replace("/glitch-out/winner");
   }, [status, router]);
 
   useEffect(() => {
@@ -110,7 +110,7 @@ export default function PlayPage() {
       return;
     }
     await fetch("/api/auth/logout", { method: "POST" });
-    router.replace("/register");
+    router.replace("/glitch-out/register");
   }
 
   function startRename() {
@@ -262,7 +262,10 @@ export default function PlayPage() {
           </AnimatePresence>
         </div>
         <div className="flex shrink-0 items-center gap-4">
-          <Link href="/settings" className="text-neon-100/40 hover:text-cyan-400" aria-label="Settings">
+          <Link href="/" className="text-neon-100/40 hover:text-cyan-400" aria-label="All games" title="All games">
+            <Home className="h-4 w-4" />
+          </Link>
+          <Link href="/glitch-out/settings" className="text-neon-100/40 hover:text-cyan-400" aria-label="Settings">
             <Settings className="h-4 w-4" />
           </Link>
           <button
@@ -296,10 +299,10 @@ export default function PlayPage() {
             <div className="space-y-3 py-6 text-center">
               <GlitchTitle text="STANDBY" className="text-2xl" as="h2" />
               <p className="caret-blink text-sm text-neon-100/70">
-                Waiting for Game Master to start OP Day CTF
+                Waiting for Game Master to start Glitch Out CTF
               </p>
               <p className="text-xs text-neon-100/40">
-                Decode the physical whiteboard cipher once the countdown ends. It holds your Level 1 password.
+                Your Level 1 cipher appears here the moment the Game Master starts the hunt. Decode it to find your password.
               </p>
             </div>
           </TerminalPanel>
@@ -330,7 +333,7 @@ export default function PlayPage() {
                 wordReward={clue?.wordReward}
                 hint={isCurrentLevel ? status.activeHint : null}
                 isCurrentLevel={isCurrentLevel}
-                cipherMessage={clue?.cipherMessage}
+                cipherMessage={isCurrentLevel ? status.currentLevelCipherMessage : null}
                 hintAvailable={status.hintAvailable}
                 helpCreditsRemaining={status.helpCreditsRemaining}
                 onRequestHint={requestHint}
@@ -342,7 +345,7 @@ export default function PlayPage() {
           })}
 
           <div
-            onClick={() => status.finalUnlocked && !status.gameFinished && router.push("/final")}
+            onClick={() => status.finalUnlocked && !status.gameFinished && router.push("/glitch-out/final")}
             data-sfx-nav={status.finalUnlocked && !status.gameFinished ? true : undefined}
             className={`terminal-panel rounded-lg p-4 transition-colors ${
               status.finalUnlocked && !status.gameFinished
@@ -376,7 +379,7 @@ export default function PlayPage() {
       )}
 
       <div className="mt-auto pt-4 text-center">
-        <Link href="/final" className="text-xs uppercase tracking-widest text-neon-100/30 hover:text-cyan-400">
+        <Link href="/glitch-out/final" className="text-xs uppercase tracking-widest text-neon-100/30 hover:text-cyan-400">
           Go to final assembly →
         </Link>
       </div>

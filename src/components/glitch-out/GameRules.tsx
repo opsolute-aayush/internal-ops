@@ -2,11 +2,15 @@ import { KeyRound, Unlock, MapPin, CheckCircle2, Lightbulb, Skull, Repeat, Troph
 import GlitchTitle from "@/components/GlitchTitle";
 
 const RULES: { icon: typeof KeyRound; text: string; color: string }[] = [
-  { icon: KeyRound, text: "Decode the Game Master's passcode to get your Level 1 password.", color: "text-neon-500" },
-  { icon: Unlock, text: "Enter a level's password on the platform to unlock it.", color: "text-neon-500" },
+  {
+    icon: KeyRound,
+    text: "Every level shows its own cipher the moment it goes active — decode it to find that level's password.",
+    color: "text-neon-500",
+  },
+  { icon: Unlock, text: "Enter it on the platform to unlock the level and reveal its location clue.", color: "text-neon-500" },
   {
     icon: MapPin,
-    text: "Unlocking reveals a location clue field. It also hides a phrase to decode; cracking it reveals the next level's password.",
+    text: "Each level's password only unlocks that level — solving one never skips you ahead.",
     color: "text-cyan-400",
   },
   { icon: CheckCircle2, text: "Go to that location, find your word, then type it back here to confirm and advance.", color: "text-cyan-400" },

@@ -151,6 +151,17 @@ export default function LevelCard({
         <div className="mt-2 space-y-2">
           <p className="text-sm text-neon-100/80">Password required to decrypt this level.</p>
 
+          {cipherMessage && (
+            <div className="space-y-1">
+              <p className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-neon-400/80">
+                <Binary className="h-3 w-3 shrink-0" /> Ye Lee: decode to find this level&apos;s password
+              </p>
+              <div className="w-full whitespace-pre-wrap break-all rounded-md border border-panel-border bg-void-2 px-3 py-2 font-mono text-xs text-neon-100">
+                {cipherMessage}
+              </div>
+            </div>
+          )}
+
           {hintSection}
 
           <span className="mt-1 inline-block text-xs font-semibold uppercase tracking-widest text-amber-400">
@@ -165,19 +176,6 @@ export default function LevelCard({
             <p className="flex items-start gap-1.5 text-sm text-neon-100/70">
               <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-neon-500" /> {locationClue}
             </p>
-          )}
-
-          {cipherMessage && (
-            <div className="space-y-1">
-              <p className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-neon-400/80">
-                <Binary className="h-3 w-3 shrink-0" /> Ye Lee: decode for the next password
-              </p>
-              {/* Same border/background treatment as the "Enter word" box below:
-                  a static field-shaped box, not just a line of text. */}
-              <div className="w-full whitespace-pre-wrap break-all rounded-md border border-panel-border bg-void-2 px-3 py-2 font-mono text-xs text-neon-100">
-                {cipherMessage}
-              </div>
-            </div>
           )}
 
           {hintSection}
