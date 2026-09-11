@@ -12,17 +12,26 @@ import {
 
 export { TEAM_COOKIE, ADMIN_COOKIE, signTeamToken, signAdminToken, verifyTeamToken, verifyAdminToken };
 
-// This runs on venue wifi over plain http:// (see docker/docker-compose.yml).
-// There's no TLS cert for a LAN IP or a local-only domain, so a `Secure`
-// cookie would just get silently dropped by every player's phone. They'd
-// still show as joined server-side, but every following request would come
-// back 401 and bounce them straight back to /register, which looks exactly
-// like the join never worked.
+// The venue-wifi LAN deployment (see docker/docker-compose.yml) runs over
+// plain http:// — there's no TLS cert for a LAN IP or a local-only domain,
+// so a `Secure` cookie would just get silently dropped by every player's
+// phone. They'd still show as joined server-side, but every following
+// request would come back 401 and bounce them straight back to /register,
+// which looks exactly like the join never worked. The VM deployment (see
+// docker/docker-compose.prod.yml + docker/nginx/app.conf) DOES terminate
+// real TLS though, and cookies there should be Secure — an active
+// on-path/SSL-stripping attacker shouldn't be able to force the browser to
+// ever hand this cookie over in cleartext. Both images set
+// NODE_ENV=production, so that alone can't tell the two apart; COOKIE_SECURE
+// is the explicit per-deployment switch (set to "true" only in
+// docker-compose.prod.yml).
+const SECURE_COOKIES = process.env.COOKIE_SECURE === "true";
+
 export async function setTeamCookie(token: string) {
   const store = await cookies();
   store.set(TEAM_COOKIE, token, {
     httpOnly: true,
-    secure: false,
+    secure: SECURE_COOKIES,
     sameSite: "lax",
     path: "/",
     maxAge: 60 * 60 * 16,
@@ -33,7 +42,7 @@ export async function setAdminCookie(token: string) {
   const store = await cookies();
   store.set(ADMIN_COOKIE, token, {
     httpOnly: true,
-    secure: false,
+    secure: SECURE_COOKIES,
     sameSite: "lax",
     path: "/",
     maxAge: 60 * 60 * 16,

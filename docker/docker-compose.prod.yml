@@ -6,6 +6,9 @@ services:
     restart: unless-stopped
     environment:
       JWT_SECRET: "${JWT_SECRET:?Set JWT_SECRET in .env — generate with: openssl rand -base64 48}"
+      # This is the one deployment path with real TLS (nginx below terminates
+      # it), so cookies here should be marked Secure. See lib/auth.ts.
+      COOKIE_SECURE: "true"
     volumes:
       - opday_data:/app/data
     expose:
@@ -16,6 +19,26 @@ services:
       timeout: 5s
       retries: 5
       start_period: 20s
+    # `restart: unless-stopped` alone only fires when the container actually
+    # exits — Docker does NOT restart a container just because its own
+    # healthcheck above reports "unhealthy" (e.g. the process is stuck but
+    # still running). The `autoheal` service below watches this label and
+    # force-restarts it in that case.
+    labels:
+      - autoheal=true
+
+  # Restarts any container labeled autoheal=true the moment Docker marks it
+  # unhealthy, by watching the socket — not just when it fully exits. Pairs
+  # with the `app` healthcheck above, which otherwise has nothing acting on
+  # it. See DEPLOYMENT.md's "If something goes down" section.
+  autoheal:
+    container_name: opday-ctf-autoheal
+    image: willfarrell/autoheal
+    restart: unless-stopped
+    environment:
+      AUTOHEAL_CONTAINER_LABEL: autoheal
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
 
   # nickfedor/watchtower, not the archived containrrr/watchtower — that
   # one's Docker client is too old to talk to a modern daemon.

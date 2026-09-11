@@ -5,6 +5,7 @@ import { signTeamToken, setTeamCookie } from "@/lib/auth";
 import { logActivity, buildTeamStatus, getSessionByCode } from "@/lib/game";
 import { parseMembers } from "@/lib/json";
 import { withKeyLock } from "@/lib/mutex";
+import { generateRejoinToken, hashRejoinToken, verifyRejoinToken } from "@/lib/rejoinToken";
 
 // Teams are pre-created by the Game Master (see /api/admin/teams), so the
 // team count always matches the physical groups at the event. Players can
@@ -13,6 +14,13 @@ import { withKeyLock } from "@/lib/mutex";
 // Even though teamId alone would resolve a team, requiring the code too
 // stops a client from joining a team it only reached by guessing or reusing
 // an ID from a different session.
+//
+// `code` + `teamId` + a member's exact display name are ALL visible to
+// anyone who can call the public GET /api/game/teams?code=... (every player
+// can, by design — it's the join screen). So a bare name match can never be
+// enough proof to reissue that member's session cookie, or anyone at the
+// venue could type in a rival's name and hijack their spot. rejoinToken is
+// the device-bound secret that closes that gap: see lib/rejoinToken.ts.
 const schema = z.object({
   code: z.string().trim().regex(/^\d{6}$/, "Enter the 6-digit session code"),
   teamId: z.string().min(1),
@@ -23,6 +31,7 @@ const schema = z.object({
     .trim()
     .regex(/^#[0-9a-fA-F]{6}$/, "Enter a valid hex color")
     .optional(),
+  rejoinToken: z.string().min(1).max(200).optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -37,7 +46,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No session found for that code." }, { status: 404 });
   }
   if (session.isFinished) {
-    return NextResponse.json({ error: "This OP Day CTF has already finished." }, { status: 409 });
+    return NextResponse.json({ error: "This Glitch Out CTF has already finished." }, { status: 409 });
   }
 
   const team = await prisma.team.findUnique({ where: { id: parsed.data.teamId } });
@@ -50,18 +59,39 @@ export async function POST(req: NextRequest) {
   // both requests read the same members list before either write lands, and
   // whichever write finishes last silently erases the other's entry. Locking
   // per team serializes the read-modify-write so nobody gets dropped.
-  const canonicalName = await withKeyLock(`team-members:${team.id}`, async () => {
+  const result = await withKeyLock(`team-members:${team.id}`, async () => {
     const fresh = await prisma.team.findUniqueOrThrow({ where: { id: team.id }, select: { members: true } });
     const members = parseMembers(fresh.members);
     const now = new Date().toISOString();
     const existing = members.find((m) => m.name.toLowerCase() === parsed.data.memberName.toLowerCase());
-    // Rejoining reuses the stored name's original casing and just refreshes
-    // presence; a genuinely new name gets its own entry.
-    const name = existing?.name ?? parsed.data.memberName;
+
+    let name: string;
+    let rejoinToken: string | undefined;
+
     if (existing) {
+      // Reclaiming an existing name. If this name was already proven-for
+      // (has a hash on file), the caller must present the matching secret —
+      // a plain name match is public knowledge, not proof of identity. Rows
+      // from before this existed have no hash yet; let those through once
+      // and mint one now so the name is protected from here on.
+      if (existing.rejoinTokenHash) {
+        const presented = parsed.data.rejoinToken;
+        if (!presented || !verifyRejoinToken(presented, existing.rejoinTokenHash)) {
+          return { ok: false as const };
+        }
+        rejoinToken = presented;
+      } else {
+        rejoinToken = generateRejoinToken();
+        existing.rejoinTokenHash = hashRejoinToken(rejoinToken);
+      }
+      // Rejoining reuses the stored name's original casing and just
+      // refreshes presence.
+      name = existing.name;
       existing.lastSeenAt = now;
     } else {
-      members.push({ name, lastSeenAt: now });
+      name = parsed.data.memberName;
+      rejoinToken = generateRejoinToken();
+      members.push({ name, lastSeenAt: now, rejoinTokenHash: hashRejoinToken(rejoinToken) });
     }
 
     const data: { members: string; name?: string; color?: string } = { members: JSON.stringify(members) };
@@ -72,14 +102,24 @@ export async function POST(req: NextRequest) {
       data.color = parsed.data.teamColor.toUpperCase();
     }
     await prisma.team.update({ where: { id: team.id }, data });
-    return name;
+    return { ok: true as const, name, rejoinToken };
   });
 
-  await logActivity(session.id, team.id, "MEMBER_JOINED", { memberName: canonicalName });
+  if (!result.ok) {
+    return NextResponse.json(
+      {
+        error:
+          "That name is already active on this team from another device. If that's you, use the same device you first joined with, or ask the Game Master to reset your spot.",
+      },
+      { status: 409 }
+    );
+  }
 
-  const token = signTeamToken({ teamId: team.id, teamName: team.name, sessionId: session.id, memberName: canonicalName });
+  await logActivity(session.id, team.id, "MEMBER_JOINED", { memberName: result.name });
+
+  const token = signTeamToken({ teamId: team.id, teamName: team.name, sessionId: session.id, memberName: result.name });
   await setTeamCookie(token);
 
   const status = await buildTeamStatus(team.id);
-  return NextResponse.json({ status });
+  return NextResponse.json({ status, rejoinToken: result.rejoinToken });
 }

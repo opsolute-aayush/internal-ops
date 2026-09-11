@@ -7,9 +7,10 @@ import GlitchTitle from "@/components/GlitchTitle";
 import TerminalPanel from "@/components/TerminalPanel";
 import InputField from "@/components/InputField";
 import NeonButton from "@/components/NeonButton";
-import AsciiOperative from "@/components/AsciiOperative";
-import AudioVideoSettings from "@/components/AudioVideoSettings";
+import AsciiOperative from "@/components/glitch-out/AsciiOperative";
+import AudioVideoSettings from "@/components/glitch-out/AudioVideoSettings";
 import { getPlayerName, setPlayerName, subscribeToPlayerNameStore } from "@/lib/playerIdentity";
+import { renameRejoinIdentity } from "@/lib/rejoinTokenStorage";
 import { getSavedSessionCode, subscribeToSessionCodeStore } from "@/lib/sessionIdentity";
 import { startSettingsMusic, stopSettingsMusic } from "@/lib/sfx";
 
@@ -46,11 +47,12 @@ export default function SettingsPage() {
       // 404/401 here just means this device isn't currently joined to a
       // team. The local name above is still the source of truth and will
       // be used the next time they join.
-      await fetch("/api/team/member-name", {
+      const res = await fetch("/api/team/member-name", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: trimmed }),
       });
+      if (res.ok) renameRejoinIdentity(trimmed);
     } catch {
       // Offline: local name is still saved.
     } finally {
@@ -69,7 +71,7 @@ export default function SettingsPage() {
       <main className="flex w-full flex-1 flex-col gap-6 px-4 py-8">
         <div className="mx-auto w-full max-w-4xl space-y-6 lg:max-w-md lg:-translate-x-6 lg:translate-y-4">
           <header className="flex items-center gap-3">
-            <Link href="/play" className="text-neon-100/40 hover:text-neon-400" aria-label="Back to play">
+            <Link href="/glitch-out/play" className="text-neon-100/40 hover:text-neon-400" aria-label="Back to play">
               <ArrowLeft className="h-5 w-5" />
             </Link>
             <GlitchTitle text="Settings" className="text-2xl" as="h1" />

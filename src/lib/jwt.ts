@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+import jwt, { type VerifyOptions } from "jsonwebtoken";
 
 const envSecret = process.env.JWT_SECRET;
 if (!envSecret) {
@@ -33,9 +33,15 @@ export function signAdminToken(sessionId: string): string {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: "16h" });
 }
 
+// Pinning the algorithm here (rather than trusting whatever `alg` a
+// presented token's header claims) rules out algorithm-confusion attacks
+// against jsonwebtoken outright, instead of relying on the library's
+// current defaults to keep doing the right thing.
+const VERIFY_OPTIONS: VerifyOptions = { algorithms: ["HS256"] };
+
 export function verifyTeamToken(token: string): TeamTokenPayload | null {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET, VERIFY_OPTIONS);
     if (typeof decoded === "object" && decoded && "teamId" in decoded && "sessionId" in decoded) {
       return decoded as unknown as TeamTokenPayload;
     }
@@ -47,7 +53,7 @@ export function verifyTeamToken(token: string): TeamTokenPayload | null {
 
 export function verifyAdminToken(token: string): AdminSession | null {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET, VERIFY_OPTIONS);
     if (
       typeof decoded === "object" &&
       decoded !== null &&

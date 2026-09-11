@@ -8,12 +8,13 @@ import GlitchTitle from "@/components/GlitchTitle";
 import TerminalPanel from "@/components/TerminalPanel";
 import NeonButton from "@/components/NeonButton";
 import InputField from "@/components/InputField";
-import TeamAvatar from "@/components/TeamAvatar";
-import MatrixRain from "@/components/MatrixRain";
+import TeamAvatar from "@/components/glitch-out/TeamAvatar";
+import MatrixRain from "@/components/glitch-out/MatrixRain";
 import ColorPicker from "@/components/ColorPicker";
 import { getPlayerName, setPlayerName, subscribeToPlayerNameStore } from "@/lib/playerIdentity";
 import { getSavedSessionCode, setSavedSessionCode, clearSavedSessionCode } from "@/lib/sessionIdentity";
 import { getDeviceId } from "@/lib/deviceIdentity";
+import { getRejoinToken, setRejoinIdentity } from "@/lib/rejoinTokenStorage";
 
 interface JoinableMember {
   name: string;
@@ -212,15 +213,17 @@ export default function RegisterPage() {
 
     setSubmitting(true);
     try {
+      const trimmedName = nameDraft.trim();
       const res = await fetch("/api/auth/join-team", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           code: sessionCode,
           teamId: selectedTeamId,
-          memberName: nameDraft.trim(),
+          memberName: trimmedName,
           teamName: teamNameDraft.trim() || undefined,
           teamColor: teamColorDraft || undefined,
+          rejoinToken: getRejoinToken(selectedTeamId, trimmedName),
         }),
       });
       const data = await res.json();
@@ -229,7 +232,10 @@ export default function RegisterPage() {
         setSubmitting(false);
         return;
       }
-      router.push("/play");
+      if (data.rejoinToken) {
+        setRejoinIdentity(selectedTeamId, trimmedName, data.rejoinToken);
+      }
+      router.push("/glitch-out/play");
       router.refresh();
     } catch {
       setError("Network error. Try again.");
