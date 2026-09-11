@@ -64,11 +64,15 @@ jobs:
           PREV_TAG=$(git tag --list 'v*' --sort=-v:refname | head -n1)
           if [ -n "$PREV_TAG" ]; then
             LOG=$(git log "${PREV_TAG}..HEAD" --no-merges --pretty='- %s')
+            if [ -z "$LOG" ]; then
+              LOG="- No commits since $PREV_TAG."
+            fi
           else
-            LOG=$(git log --no-merges --pretty='- %s')
-          fi
-          if [ -z "$LOG" ]; then
-            LOG="- No commits since ${PREV_TAG:-the beginning of history}."
+            # No vX.Y.Z tag exists yet (this repo's first release under this
+            # workflow) — list every commit ever made instead, one line per
+            # entry, one very long changelog entry. Bootstrap it once
+            # instead: a single note, so history starts clean from here.
+            LOG="- Initial tracked release."
           fi
           RELEASE_VERSION="${{ inputs.version }}" RELEASE_LOG="$LOG" python3 scripts/update-changelog.py
 
