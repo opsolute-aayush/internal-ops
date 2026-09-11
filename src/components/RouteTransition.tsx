@@ -12,9 +12,13 @@ import { usePathname } from "next/navigation";
 // component-level effect alone.
 export default function RouteTransition({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  // The glitch-in flicker is part of the neon game-page identity (see
+  // ThemeChrome for the same split). The mission-select home screen ("/")
+  // has its own, calmer look and opts out of it, same as the scanlines/grid.
+  const isHome = pathname === "/";
 
   return (
-    <div key={pathname} className="glitch-reveal flex min-h-full flex-1 flex-col">
+    <div key={pathname} className={`flex min-h-full flex-1 flex-col ${isHome ? "" : "glitch-reveal"}`}>
       {children}
     </div>
   );

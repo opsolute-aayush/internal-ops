@@ -1,0 +1,826 @@
+/*
+ * The mission-select home screen's own visual system — deliberately not the
+ * rest of the app's neon-cyberpunk terminal theme (see components/ThemeChrome
+ * for how the shared scanlines/grid/glitch-debris layer opts out on "/").
+ * Every custom property and every bare-tag rule below is scoped under
+ * `.page` (this file's root class) instead of `:root`/`body`, so none of it
+ * leaks onto other routes once this stylesheet is loaded.
+ */
+
+.page {
+  /* dark, clear glass — the page is dark and colorful, so a dark-tinted
+     pane keeps text legible and lets the color blobs bend through it
+     instead of burying them in white fog */
+  --bg: #08080e;
+  --border: #262637;
+  --border-hi: #38384f;
+  --text: #f3f2fb;
+  --text-dim: #a8a5c2;
+  --text-faint: #6f6c8a;
+  --coral: #ff4d6d;
+  --coral-2: #ff8a5b;
+  --cyan: #35e0c9;
+  --violet: #8b7cff;
+  --gold: #ffc24b;
+  --focus: #ffd08a;
+  --glass: rgba(9, 8, 16, 0.14);
+  --glass-hi: rgba(28, 24, 38, 0.07);
+  --glass-border: rgba(255, 255, 255, 0.24);
+  /* Clear glass, not frosted glass: a couple of px of blur (just enough to
+     keep text legible over busy backdrops), most of the "glass" quality
+     coming from feTurbulence/feDisplacementMap actually bending whatever
+     is behind the WHOLE panel — and animated (see the <animate> on
+     feDisplacementMap's scale in page.tsx), so it visibly breathes instead
+     of sitting there as one frozen warp. Kept deliberately light on
+     contrast/saturate/tint (down from an earlier, muddier pass) — pushing
+     those up made the panel read as foggy/dark instead of clear, since
+     most of what sits behind these cards is a smooth, low-detail backdrop
+     that a strong contrast boost just darkens rather than "reveals".
+     IMPORTANT: the upgrade to --glass-blur happens ONLY via the
+     `@supports` block at the bottom of this file, never by also writing a
+     `-webkit-backdrop-filter` with a different value on the same rule —
+     Next's build (Lightning CSS) silently collapses that pattern down to
+     whichever value the prefixed declaration held, discarding this one
+     entirely. Confirmed bug, not hypothetical. */
+  --glass-blur: url(#mission-board-glass) blur(1.5px) saturate(145%) contrast(1.03);
+  --glass-blur-fallback: blur(3px) saturate(135%) contrast(1.02);
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  position: relative;
+  overflow-x: hidden;
+  width: 100%;
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  padding-inline: clamp(18px, 5vw, 72px);
+  padding-block: clamp(22px, 4vw, 44px) 64px;
+}
+
+.page :is(h1, h2, h3, p, figure) {
+  margin: 0;
+}
+.page :is(a, button) {
+  color: inherit;
+  font: inherit;
+}
+.page ::selection {
+  background: rgba(255, 77, 109, 0.35);
+  color: var(--text);
+}
+
+/* ---------- ambient backdrop: drifting aurora blobs + starfield ---------- */
+.fx {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.35;
+  will-change: transform;
+}
+.b1 {
+  width: 46vw;
+  height: 46vw;
+  left: -10vw;
+  top: -14vw;
+  background: radial-gradient(circle, var(--coral), transparent 68%);
+  animation: mbDrift1 22s ease-in-out infinite;
+}
+.b2 {
+  width: 38vw;
+  height: 38vw;
+  right: -8vw;
+  top: 6vw;
+  background: radial-gradient(circle, var(--cyan), transparent 68%);
+  animation: mbDrift2 26s ease-in-out infinite;
+}
+.b3 {
+  width: 34vw;
+  height: 34vw;
+  left: 22vw;
+  bottom: -16vw;
+  background: radial-gradient(circle, var(--violet), transparent 68%);
+  animation: mbDrift3 30s ease-in-out infinite;
+}
+.stars {
+  position: absolute;
+  inset: 0;
+  opacity: 0.5;
+  background-image: radial-gradient(1.5px 1.5px at 8% 20%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 24% 66%, #fff, transparent),
+    radial-gradient(1px 1px at 38% 12%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 55% 82%, #fff, transparent),
+    radial-gradient(1px 1px at 68% 34%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 82% 58%, #fff, transparent),
+    radial-gradient(1px 1px at 91% 18%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 14% 88%, #fff, transparent);
+  animation: mbTwinkle 5s ease-in-out infinite;
+}
+@keyframes mbDrift1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(6vw, 4vw) scale(1.08); }
+}
+@keyframes mbDrift2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-5vw, 5vw) scale(1.1); }
+}
+@keyframes mbDrift3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(4vw, -4vw) scale(1.06); }
+}
+@keyframes mbTwinkle {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.65; }
+}
+
+.wrap {
+  position: relative;
+  z-index: 1;
+  max-width: 1220px;
+  margin-inline: auto;
+}
+
+/* ---------- top bar ---------- */
+.topbar {
+  display: flex;
+  align-items: center;
+  margin-bottom: clamp(30px, 6vw, 52px);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+.brandMark {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(155deg, var(--coral), var(--coral-2));
+  box-shadow: 0 0 22px rgba(255, 77, 109, 0.4);
+  font-family: var(--font-rajdhani), sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #170406;
+}
+.brandWord {
+  font-family: var(--font-jbmono), monospace;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+/* ---------- hero copy ---------- */
+.intro {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.75rem;
+  margin-bottom: clamp(26px, 5vw, 40px);
+  align-items: end;
+}
+@media (min-width: 880px) {
+  .intro {
+    grid-template-columns: 1fr auto;
+  }
+}
+.eyebrow {
+  font-family: var(--font-jbmono), monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.26em;
+  color: var(--cyan);
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-bottom: 0.8rem;
+}
+.eyebrowDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 0 3px rgba(53, 224, 201, 0.2);
+  animation: mbPulse 2s ease-in-out infinite;
+}
+.h1 {
+  font-family: var(--font-rajdhani), sans-serif;
+  font-weight: 700;
+  font-size: clamp(2.4rem, 5.6vw, 3.9rem);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+.h1Accent {
+  background: linear-gradient(100deg, var(--coral), var(--coral-2) 60%, var(--gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.lede {
+  margin-top: 0.85rem;
+  font-size: 1.02rem;
+  line-height: 1.6;
+  color: var(--text-dim);
+  max-width: 50ch;
+}
+
+.hud {
+  position: relative;
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  overflow: hidden;
+  background: linear-gradient(160deg, var(--glass-hi), var(--glass));
+  backdrop-filter: var(--glass-blur-fallback);
+  box-shadow: inset 0 1px 0 #ffffff8a, 0 14px 30px -20px rgba(0, 0, 0, 0.55);
+}
+.hudCell {
+  position: relative;
+  z-index: 1;
+  padding: 0.9rem 1.3rem;
+  text-align: center;
+  min-width: 92px;
+}
+.hudCell + .hudCell {
+  border-left: 1px solid rgba(255, 255, 255, 0.14);
+}
+.hudNum {
+  font-family: var(--font-rajdhani), sans-serif;
+  font-weight: 700;
+  font-size: 1.7rem;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+.hudLabel {
+  display: block;
+  margin-top: 0.3rem;
+  font-family: var(--font-jbmono), monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  color: var(--text-faint);
+  text-transform: uppercase;
+}
+.hudLive .hudNum {
+  color: var(--coral-2);
+}
+.hudDev .hudNum {
+  color: var(--cyan);
+}
+
+.sectionLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 2.6rem 0 1.1rem;
+}
+.sectionLabel span {
+  font-family: var(--font-jbmono), monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.sectionLine {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ================= Now Playing: auto-rotating carousel ================= */
+.carousel {
+  position: relative;
+  border-radius: 24px;
+  overflow: hidden;
+}
+.carouselTrack {
+  display: flex;
+  /* Lazy/slow, no spring overshoot — matches the eased "lazy scroll" feel
+     used for wheel scrolling elsewhere (see useLazyScroll), just applied to
+     the slide-to-slide transform instead of scrollTop. */
+  transition: transform 1.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.slide {
+  position: relative;
+  flex: none;
+  padding: clamp(1.6rem, 3.4vw, 2.6rem);
+  border-radius: 24px;
+  background: radial-gradient(900px 380px at 100% -10%, color-mix(in srgb, var(--tile-color) 20%, transparent), transparent 60%),
+    radial-gradient(700px 340px at -10% 120%, color-mix(in srgb, var(--tile-color) 10%, transparent), transparent 60%),
+    linear-gradient(160deg, var(--glass-hi), var(--glass));
+  backdrop-filter: var(--glass-blur-fallback);
+  border: 1px solid var(--glass-border);
+  box-shadow: inset 0 1px 0 #ffffff8a, 0 30px 60px -30px rgba(0, 0, 0, 0.55);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.6rem;
+}
+.slide > * {
+  position: relative;
+  z-index: 1;
+}
+@media (min-width: 820px) {
+  .slide {
+    grid-template-columns: 1.2fr 0.8fr;
+    align-items: center;
+  }
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-jbmono), monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--tile-color);
+  border: 1px solid color-mix(in srgb, var(--tile-color) 55%, transparent);
+  background: color-mix(in srgb, var(--tile-color) 20%, black 55%);
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  margin-bottom: 1rem;
+  width: fit-content;
+}
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--tile-color);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tile-color) 30%, transparent);
+  animation: mbPulse 1.6s ease-in-out infinite;
+}
+.slideTitle {
+  font-family: var(--font-rajdhani), sans-serif;
+  font-weight: 700;
+  font-size: clamp(2rem, 4.4vw, 3rem);
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  color: var(--text);
+}
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1.05rem 0 1.2rem;
+}
+.chip {
+  font-family: var(--font-jbmono), monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.35rem 0.65rem;
+  border-radius: 6px;
+}
+.slideDesc {
+  font-size: 0.98rem;
+  line-height: 1.65;
+  color: var(--text-dim);
+  max-width: 50ch;
+}
+
+.playBtn {
+  position: relative;
+  overflow: hidden;
+  margin-top: 1.3rem;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(100deg, var(--tile-color), var(--coral-2));
+  color: #1d0407;
+  font-family: var(--font-rajdhani), sans-serif;
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 0.9rem 1.7rem;
+  border-radius: 10px;
+  box-shadow: 0 12px 30px -10px color-mix(in srgb, var(--tile-color) 70%, transparent);
+  transition: transform 0.4s var(--spring), box-shadow 0.2s ease;
+  text-decoration: none;
+}
+.playBtn:hover {
+  transform: translateY(-2px) scale(1.03);
+}
+.playBtn:active {
+  transform: scale(0.94);
+  transition-duration: 0.12s;
+}
+.playBtn:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+.playBtn svg {
+  width: 16px;
+  height: 16px;
+}
+.playBtn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, 0.55) 35%, transparent 50%);
+  background-size: 250% 100%;
+  background-position: 150% 0;
+  animation: mbSheenBtn 3.2s ease-in-out infinite;
+}
+.lockedCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.3rem;
+  width: fit-content;
+  font-family: var(--font-jbmono), monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  border: 1px dashed rgba(255, 255, 255, 0.24);
+  padding: 0.75rem 1.2rem;
+  border-radius: 10px;
+}
+
+.sidePanel {
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  padding: 1.15rem 1.3rem;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.24));
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.sidePanelLabel {
+  font-family: var(--font-jbmono), monospace;
+  font-size: 0.64rem;
+  letter-spacing: 0.14em;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 0.7rem;
+}
+.sidePanel ol {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--text-dim);
+  font-size: 0.86rem;
+  line-height: 1.85;
+}
+.sidePanel li::marker {
+  color: var(--tile-color);
+  font-family: var(--font-jbmono), monospace;
+  font-size: 0.8em;
+}
+.sideProgress {
+  font-family: var(--font-jbmono), monospace;
+}
+.sideProgressRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 0.6rem;
+}
+.sideProgressRow b {
+  color: var(--tile-color);
+  font-weight: 600;
+}
+.bar {
+  height: 5px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+.barFill {
+  display: block;
+  height: 100%;
+  background: var(--tile-color);
+  border-radius: 99px;
+}
+
+/* carousel controls */
+.carControls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.1rem;
+  margin-top: 1rem;
+}
+/* plain, flat, no fake-glass shine — a nav control this small just needs to
+   read as a clean button */
+.carArrow {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.4s var(--spring);
+}
+.carArrow:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.1);
+}
+.carArrow:active {
+  transform: scale(0.88);
+  transition-duration: 0.12s;
+}
+.carArrow:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.carArrow svg {
+  width: 15px;
+  height: 15px;
+  color: var(--text-dim);
+}
+.carDots {
+  display: flex;
+  gap: 0.5rem;
+}
+.carDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border-hi);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.carDotActive {
+  background: var(--coral-2);
+  transform: scale(1.3);
+}
+.carDot:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+
+/* ================= Games grid ================= */
+.gamesGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.1rem;
+}
+@media (min-width: 640px) {
+  .gamesGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (min-width: 980px) {
+  .gamesGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.tiltZone {
+  perspective: 1200px;
+}
+.gameCard {
+  position: relative;
+  border-radius: 22px;
+  border: 1px solid var(--glass-border);
+  /* The slide reads as vividly colored mostly because it's tall enough to
+     catch one of the page's fixed ambient blobs through its backdrop-filter
+     — real blurred color behind real glass. These smaller, lower-on-page
+     cards mostly scroll past those blobs, so copying the slide's own
+     (quite faint, 20%/10%) source opacity left them looking like a
+     different, flatter design. Compensate with a much stronger wash of the
+     card's own tile color — a full-corner-to-corner gradient, not just a
+     small corner highlight — so the card reads as unmistakably tinted
+     glass on its own, matching the slide's actual on-screen weight instead
+     of its source numbers. */
+  background: linear-gradient(135deg, color-mix(in srgb, var(--tile-color) 38%, transparent) 0%, color-mix(in srgb, var(--tile-color) 10%, transparent) 55%, transparent 88%),
+    radial-gradient(230px 210px at 100% -10%, color-mix(in srgb, var(--tile-color) 34%, transparent), transparent 65%),
+    linear-gradient(160deg, var(--glass-hi), var(--glass));
+  backdrop-filter: var(--glass-blur-fallback);
+  overflow: hidden;
+  transform-style: preserve-3d;
+  box-shadow: inset 0 1px 0 #ffffff8a, 0 20px 40px -26px rgba(0, 0, 0, 0.6);
+  transition: transform 0.5s var(--spring), box-shadow 0.3s ease, border-color 0.2s ease;
+  animation: mbRise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  padding: 1.4rem;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  width: 100%;
+  text-decoration: none;
+}
+.gamePlayable {
+  cursor: pointer;
+}
+.gamePlayable:hover {
+  border-color: color-mix(in srgb, var(--tile-color) 60%, var(--glass-border));
+}
+.gamePlayable:active {
+  transform: scale(0.96) !important;
+  transition-duration: 0.15s;
+}
+.gameLocked::after {
+  content: "";
+  position: absolute;
+  inset: -40% -100%;
+  pointer-events: none;
+  background: linear-gradient(100deg, transparent 40%, rgba(255, 255, 255, 0.15) 48%, transparent 56%);
+  animation: mbSheenSlow 5s linear infinite;
+}
+.cardTop {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.cardIcon {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: var(--tile-color);
+}
+.cardIcon svg {
+  width: 16px;
+  height: 16px;
+}
+.cardStatus {
+  font-family: var(--font-jbmono), monospace;
+  font-size: 0.64rem;
+  color: var(--tile-color);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.gameTitle {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-rajdhani), sans-serif;
+  font-weight: 700;
+  font-size: 1.28rem;
+  text-transform: uppercase;
+  margin-top: 1rem;
+  color: var(--text);
+}
+.gameDesc {
+  position: relative;
+  z-index: 1;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--text-dim);
+  margin-top: 0.45rem;
+  flex: 1;
+}
+.cardBar {
+  position: relative;
+  z-index: 1;
+  margin-top: 0.9rem;
+  height: 4px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+.cardBarFill {
+  display: block;
+  height: 100%;
+  background: var(--tile-color);
+  border-radius: 99px;
+}
+.cardCta {
+  position: relative;
+  z-index: 1;
+  margin-top: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-jbmono), monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tile-color);
+}
+.cardCta svg {
+  width: 13px;
+  height: 13px;
+  transition: transform 0.15s ease;
+}
+.gamePlayable:hover .cardCta svg {
+  transform: translateX(3px);
+}
+
+.redact {
+  background: #05050a;
+  color: transparent;
+  border-radius: 3px;
+  user-select: none;
+}
+
+.footer {
+  margin-top: clamp(40px, 7vw, 60px);
+  padding-top: 1.3rem;
+  border-top: 1px solid var(--border);
+  font-family: var(--font-jbmono), monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+  color: var(--text-faint);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+}
+
+@keyframes mbPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+@keyframes mbRise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes mbSheenBtn {
+  0%, 60% { background-position: 150% 0; }
+  100% { background-position: -50% 0; }
+}
+@keyframes mbSheenSlow {
+  0% { transform: translateX(-40%); }
+  100% { transform: translateX(40%); }
+}
+
+.gamesGrid > *:nth-child(1) { animation-delay: 0.04s; }
+.gamesGrid > *:nth-child(2) { animation-delay: 0.1s; }
+.gamesGrid > *:nth-child(3) { animation-delay: 0.16s; }
+.gamesGrid > *:nth-child(4) { animation-delay: 0.22s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .page * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .gameCard {
+    transform: none !important;
+  }
+}
+
+/* ---------- shared "living glass" surface (hud / slide / gameCard) ---------- */
+/* The border itself breathing with the tile color — a soft, slow pulse
+   standing in for a refracting edge, since an animated border-image would
+   just square off these rounded corners. Only panels that carry a
+   --tile-color (slide, gameCard) get it. */
+.gameCard {
+  animation: mbRise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both, mbRimBreathe 6s ease-in-out infinite;
+}
+.slide {
+  animation: mbRimBreathe 6s ease-in-out infinite;
+}
+@keyframes mbRimBreathe {
+  0%, 100% {
+    box-shadow: inset 0 1px 0 #ffffff8a, 0 20px 40px -26px rgba(0, 0, 0, 0.6),
+      inset 0 0 0 1px color-mix(in srgb, var(--tile-color) 30%, transparent);
+  }
+  50% {
+    box-shadow: inset 0 1px 0 #ffffffc0, 0 20px 40px -26px rgba(0, 0, 0, 0.6),
+      inset 0 0 0 1.5px color-mix(in srgb, var(--tile-color) 70%, transparent);
+  }
+}
+
+/* Progressive enhancement to the real SVG-bent glass, as separate rules in
+   a feature query rather than a same-rule `-webkit-backdrop-filter`
+   fallback — see the long comment on --glass-blur up top for why that
+   pattern gets silently mangled by this app's build. Evaluates true in
+   Chromium (which can parse a url() reference inside backdrop-filter),
+   false in Safari/Firefox, which keep the plain --glass-blur-fallback
+   blur set above instead. */
+@supports (backdrop-filter: url(#mission-board-glass)) {
+  .hud,
+  .slide,
+  .gameCard {
+    backdrop-filter: var(--glass-blur);
+  }
+}
