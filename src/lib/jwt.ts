@@ -6,8 +6,8 @@ if (!envSecret) {
 }
 const JWT_SECRET: string = envSecret;
 
-export const TEAM_COOKIE = "opday_team_session";
-export const ADMIN_COOKIE = "opday_admin_session";
+export const TEAM_COOKIE = "glitchout_team_session";
+export const ADMIN_COOKIE = "glitchout_admin_session";
 
 export interface TeamTokenPayload {
   teamId: string;

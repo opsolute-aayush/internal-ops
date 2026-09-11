@@ -1,6 +1,6 @@
 {
-  "name": "opday-ctf",
-  "version": "0.2.0",
+  "name": "internal-ops",
+  "version": "0.3.0",
   "private": true,
   "scripts": {
     "start:event": "bash scripts/run.sh",
@@ -11,8 +11,8 @@
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
     "db:reset": "prisma db push --force-reset",
-    "docker:build": "docker build -f docker/Dockerfile -t opday-ctf .",
-    "docker:run": "docker run -p 3000:3000 -e JWT_SECRET=\"$(openssl rand -base64 48)\" -v opday_data:/app/data opday-ctf",
+    "docker:build": "docker build -f docker/Dockerfile -t internal-ops .",
+    "docker:run": "docker run -p 3000:3000 -e JWT_SECRET=\"$(openssl rand -base64 48)\" -v internal_ops_data:/app/data internal-ops",
     "compose:up": "bash scripts/compose-up.sh",
     "compose:dns": "bash scripts/compose-up.sh dns",
     "compose:down": "docker compose -f docker/docker-compose.yml --project-directory . down"

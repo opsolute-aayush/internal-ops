@@ -9,7 +9,7 @@ services:
     environment:
       JWT_SECRET: "${JWT_SECRET:?Set JWT_SECRET in .env — generate with: openssl rand -base64 48}"
     volumes:
-      - opday_data:/app/data
+      - internal_ops_data:/app/data
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://localhost:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 15s
@@ -33,4 +33,4 @@ services:
       - "53:53/tcp"
 
 volumes:
-  opday_data:
+  internal_ops_data:

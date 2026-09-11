@@ -5,8 +5,8 @@
 // prefill for renaming later in Settings. This avoids asking for it again
 // at every step. Persisted per-device, same pattern as settings.ts.
 
-const STORAGE_KEY = "opday:player-name";
-const EVENT = "opday:player-name-changed";
+const STORAGE_KEY = "glitchout:player-name";
+const EVENT = "glitchout:player-name-changed";
 
 export function getPlayerName(): string {
   if (typeof window === "undefined") return "";

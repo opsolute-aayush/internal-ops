@@ -1,7 +1,7 @@
 services:
   app:
-    container_name: opday-ctf-app
-    image: "${DOCKER_IMAGE:-aayushop/opday-ctf}:${DOCKER_TAG:-latest}"
+    container_name: internal-ops-app
+    image: "${DOCKER_IMAGE:-aayushop/internal-ops}:${DOCKER_TAG:-latest}"
     platform: linux/amd64
     restart: unless-stopped
     environment:
@@ -10,7 +10,7 @@ services:
       # it), so cookies here should be marked Secure. See lib/auth.ts.
       COOKIE_SECURE: "true"
     volumes:
-      - opday_data:/app/data
+      - internal_ops_data:/app/data
     expose:
       - "3000"
     healthcheck:
@@ -32,7 +32,7 @@ services:
   # with the `app` healthcheck above, which otherwise has nothing acting on
   # it. See DEPLOYMENT.md's "If something goes down" section.
   autoheal:
-    container_name: opday-ctf-autoheal
+    container_name: internal-ops-autoheal
     image: willfarrell/autoheal
     restart: unless-stopped
     environment:
@@ -43,16 +43,16 @@ services:
   # nickfedor/watchtower, not the archived containrrr/watchtower — that
   # one's Docker client is too old to talk to a modern daemon.
   watchtower:
-    container_name: opday-ctf-watchtower
+    container_name: internal-ops-watchtower
     image: nickfedor/watchtower
     platform: linux/amd64
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    command: --interval 300 --cleanup opday-ctf-app
+    command: --interval 300 --cleanup internal-ops-app
 
   nginx:
-    container_name: opday-ctf-nginx
+    container_name: internal-ops-nginx
     image: nginx:1.27-alpine
     platform: linux/amd64
     restart: unless-stopped
@@ -69,7 +69,7 @@ services:
       sh -c "while :; do sleep 12h & wait $${!}; nginx -s reload; done & nginx -g 'daemon off;'"
 
   certbot:
-    container_name: opday-ctf-certbot
+    container_name: internal-ops-certbot
     image: certbot/certbot
     platform: linux/amd64
     restart: unless-stopped
@@ -80,6 +80,6 @@ services:
       sh -c "trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done"
 
 volumes:
-  opday_data:
+  internal_ops_data:
   certbot_conf:
   certbot_www:

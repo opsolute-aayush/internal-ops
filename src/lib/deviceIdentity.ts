@@ -5,7 +5,7 @@
 // device's repeated pings apart from another's before either has a real
 // team cookie to identify them by.
 
-const STORAGE_KEY = "opday:device-id";
+const STORAGE_KEY = "glitchout:device-id";
 
 export function getDeviceId(): string {
   if (typeof window === "undefined") return "";

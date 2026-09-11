@@ -13,7 +13,7 @@ export interface VideoClipEventDetail {
   src: string;
 }
 
-const VIDEO_EVENT = "opday:play-video";
+const VIDEO_EVENT = "glitchout:play-video";
 
 const fileListCache = new Map<VideoCategory, string[]>();
 const fileListInFlight = new Map<VideoCategory, Promise<string[]>>();

@@ -6,7 +6,7 @@
 // join-team response — never guessable, never shown in the UI. See
 // lib/rejoinToken.ts for the server side this pairs with.
 
-const STORAGE_KEY = "opday:rejoin-identity";
+const STORAGE_KEY = "glitchout:rejoin-identity";
 
 interface StoredIdentity {
   teamId: string;

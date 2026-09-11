@@ -17,9 +17,9 @@ cd "$(dirname "$0")"
 
 DOMAIN="aegios.co.in"
 # Explicit project name (-p) so container/volume names are always
-# "opday-ctf_*" regardless of what this folder happens to be called on
+# "internal-ops_*" regardless of what this folder happens to be called on
 # whatever machine it's copied to.
-COMPOSE=(docker compose -p opday-ctf -f docker-compose.prod.yml)
+COMPOSE=(docker compose -p internal-ops -f docker-compose.prod.yml)
 
 # LETSENCRYPT_EMAIL is used directly below (not just passed through to a
 # container), so it has to actually be loaded into this shell, not just
@@ -36,7 +36,7 @@ EXISTING=$("${COMPOSE[@]}" run --rm --entrypoint sh certbot -c \
   "test -d /etc/letsencrypt/live/$DOMAIN && echo yes || echo no" 2>/dev/null | tr -d '\r\n')
 if [ "$EXISTING" = "yes" ]; then
   echo "==> A certificate for $DOMAIN already exists — nothing to do."
-  echo "    (To force a fresh one, remove it first: docker volume rm opday-ctf_certbot_conf)"
+  echo "    (To force a fresh one, remove it first: docker volume rm internal-ops_certbot_conf)"
   exit 0
 fi
 

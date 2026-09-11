@@ -6,7 +6,7 @@ import { Bug } from "lucide-react";
 // on staying JS-independent) to opt into "use client".
 const ISSUE_BODY = ["**What happened?**", "", "", "**What did you expect instead?**", "", ""].join("\n");
 
-const ISSUES_URL = `https://github.com/opsolute-aayush/op_day_ctf/issues/new?labels=bug&body=${encodeURIComponent(
+const ISSUES_URL = `https://github.com/opsolute-aayush/internal-ops/issues/new?labels=bug&body=${encodeURIComponent(
   ISSUE_BODY
 )}`;
 

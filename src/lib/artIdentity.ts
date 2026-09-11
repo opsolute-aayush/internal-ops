@@ -5,7 +5,7 @@
 // character-art render across visits instead of it changing on them.
 // Different users (different devices) still land on different images.
 
-const STORAGE_KEY = "opday:assigned-art";
+const STORAGE_KEY = "glitchout:assigned-art";
 
 export function getAssignedArtFile(): string | null {
   if (typeof window === "undefined") return null;

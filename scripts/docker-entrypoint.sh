@@ -15,5 +15,5 @@ npx prisma db push --skip-generate
 echo "==> Seeding cipher hint bank..."
 npx tsx prisma/seed-cipher-hints.ts
 
-echo "==> Starting OP Day CTF on port ${PORT:-3000}"
+echo "==> Starting Internal Ops on port ${PORT:-3000}"
 exec node_modules/.bin/next start -H 0.0.0.0 -p "${PORT:-3000}"

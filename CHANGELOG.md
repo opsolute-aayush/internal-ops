@@ -3,6 +3,28 @@
 Every push to `main` gets an entry here: the version bump and what changed.
 Newest at the top.
 
+## [0.3.0] - 2026-09-11
+
+### Changed
+- Renamed the project from `opday-ctf` to `internal-ops` — matches the
+  mission-select home screen's own "Internal Ops" branding as the umbrella
+  platform hosting Glitch Out and future games. Touches the package name,
+  Docker image (`aayushop/internal-ops`), container names, the GitHub
+  repo (now `opsolute-aayush/internal-ops`), and the Docker Compose data
+  volume.
+- Session cookies and localStorage keys (team/admin session, rejoin
+  identity, device id, player name, settings, etc.) renamed from an
+  `opday`/`opday_*` prefix to `glitchout`/`glitchout_*` — these are
+  Glitch Out–specific, not platform-wide, so they now match that game's
+  own namespace instead of the platform's new name.
+
+**Deploy note:** the Compose project name and data volume changed
+(`opday-ctf_opday_data` → `internal-ops_internal_ops_data`). Migrate the
+existing volume's contents before pointing a live deployment at the new
+compose files, or the app will start against an empty database. See
+`DEPLOYMENT.md`. Also: anyone with an active session will need to
+rejoin once, since the session cookie name changed.
+
 ## [0.2.0] - 2026-09-11
 
 ### Added

@@ -57,7 +57,7 @@ HOST_IP_OR_PLACEHOLDER="${HOST_IP:-THIS_MACHINE_IP}"
 
 echo ""
 echo "=================================================================="
-echo "  OP Day CTF"
+echo "  Internal Ops"
 echo "  LAN IP detected:  ${HOST_IP:-none — set HOST_IP manually in .env}"
 echo ""
 echo "  Once containers are up:"

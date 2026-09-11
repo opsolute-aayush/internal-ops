@@ -1,9 +1,9 @@
-# OP Day CTF
+# Internal Ops
 
-[![Build and push Docker image](https://github.com/opsolute-aayush/op_day_ctf/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/opsolute-aayush/op_day_ctf/actions/workflows/docker-publish.yml)
-[![Docker Hub](https://img.shields.io/docker/v/aayushop/opday-ctf?sort=semver&label=docker&logo=docker)](https://hub.docker.com/r/aayushop/opday-ctf/tags)
-[![Docker Pulls](https://img.shields.io/docker/pulls/aayushop/opday-ctf?label=pulls&logo=docker)](https://hub.docker.com/r/aayushop/opday-ctf)
-[![Status](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fopsolute-aayush%2Fop_day_ctf%2Fstatus%2Fstatus.json&cacheSeconds=300)](https://aegios.co.in)
+[![Build and push Docker image](https://github.com/opsolute-aayush/internal-ops/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/opsolute-aayush/internal-ops/actions/workflows/docker-publish.yml)
+[![Docker Hub](https://img.shields.io/docker/v/aayushop/internal-ops?sort=semver&label=docker&logo=docker)](https://hub.docker.com/r/aayushop/internal-ops/tags)
+[![Docker Pulls](https://img.shields.io/docker/pulls/aayushop/internal-ops?label=pulls&logo=docker)](https://hub.docker.com/r/aayushop/internal-ops)
+[![Status](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fopsolute-aayush%2Finternal-ops%2Fstatus%2Fstatus.json&cacheSeconds=300)](https://aegios.co.in)
 
 A physical + digital scavenger hunt. Teams decode a cipher, find hidden word cards, and race to build a final sentence. Self-contained Next.js app, no external services needed.
 
@@ -38,11 +38,11 @@ npm run dev              # → http://localhost:3000
 **Docker (single container):**
 
 ```bash
-docker build -f docker/Dockerfile -t opday-ctf .
+docker build -f docker/Dockerfile -t internal-ops .
 docker run -d -p 3000:3000 \
   -e JWT_SECRET="$(openssl rand -base64 48)" \
-  -v opday_data:/app/data \
-  opday-ctf
+  -v internal_ops_data:/app/data \
+  internal-ops
 ```
 
 Open `http://localhost:3000/glitch-out/admin` → **Create New Session**. The volume keeps your data and `JWT_SECRET` across restarts.
@@ -50,7 +50,7 @@ Open `http://localhost:3000/glitch-out/admin` → **Create New Session**. The vo
 **Docker Compose (a laptop or a VM):**
 
 ```bash
-git clone <this repo> && cd opday-ctf
+git clone <this repo> && cd internal-ops
 npm run compose:up
 ```
 

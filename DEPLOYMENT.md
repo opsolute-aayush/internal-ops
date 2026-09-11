@@ -15,15 +15,15 @@ key (e.g. AWS EC2) — same steps on any VPS.
 - [ ] Domain's DNS **A record** points at the instance's public IP. No
       domain? Use the README's plain-HTTP "Docker Compose" setup instead —
       this file is for a public instance with a domain.
-- [ ] SSH key (e.g. `opday-ctf-keys.pem`) — already gitignored, keep it
+- [ ] SSH key (e.g. `internal-ops-keys.pem`) — already gitignored, keep it
       that way.
-- [ ] A Docker Hub image to pull (`aayushop/opday-ctf` or your fork) —
+- [ ] A Docker Hub image to pull (`aayushop/internal-ops` or your fork) —
       see **Releasing an update** if you need to build one first.
 
 ```bash
-chmod 400 opday-ctf-keys.pem
-ssh -i opday-ctf-keys.pem ec2-user@<instance-public-ip>   # Amazon Linux
-# ssh -i opday-ctf-keys.pem ubuntu@<instance-public-ip>   # Ubuntu
+chmod 400 internal-ops-keys.pem
+ssh -i internal-ops-keys.pem ec2-user@<instance-public-ip>   # Amazon Linux
+# ssh -i internal-ops-keys.pem ubuntu@<instance-public-ip>   # Ubuntu
 ```
 
 ---
@@ -56,17 +56,17 @@ reboot, which Part 3's auto-recovery depends on.
 **Copy the `docker/` folder** (no repo clone needed):
 
 ```bash
-scp -i opday-ctf-keys.pem -r docker/ ec2-user@<instance-public-ip>:~/opday-ctf/
+scp -i internal-ops-keys.pem -r docker/ ec2-user@<instance-public-ip>:~/internal-ops/
 ```
 
 **Configure it** — on the instance:
 
 ```bash
-cd ~/opday-ctf/docker
+cd ~/internal-ops/docker
 cat > .env <<EOF
 JWT_SECRET=$(openssl rand -base64 48)
 LETSENCRYPT_EMAIL=you@example.com
-DOCKER_IMAGE=aayushop/opday-ctf
+DOCKER_IMAGE=aayushop/internal-ops
 DOCKER_TAG=latest
 EOF
 ```
@@ -79,7 +79,7 @@ someone forge sessions.
 
 ```bash
 ./certbot-init.sh
-docker compose -p opday-ctf -f docker-compose.prod.yml up -d
+docker compose -p internal-ops -f docker-compose.prod.yml up -d
 ```
 
 Open `https://your-domain.com/glitch-out/admin` → **Create New Session**. Done.
@@ -89,7 +89,7 @@ Open `https://your-domain.com/glitch-out/admin` → **Create New Session**. Done
 ## 2. What's running
 
 ```bash
-docker compose -p opday-ctf -f docker-compose.prod.yml ps
+docker compose -p internal-ops -f docker-compose.prod.yml ps
 ```
 
 | Service | Job | Self-heals via |
@@ -117,9 +117,9 @@ within 5 min. Cert renewal is automatic too. To check in or nudge it
 yourself:
 
 ```bash
-docker compose -p opday-ctf -f docker-compose.prod.yml ps
-docker compose -p opday-ctf -f docker-compose.prod.yml logs app --tail 100
-docker compose -p opday-ctf -f docker-compose.prod.yml restart app
+docker compose -p internal-ops -f docker-compose.prod.yml ps
+docker compose -p internal-ops -f docker-compose.prod.yml logs app --tail 100
+docker compose -p internal-ops -f docker-compose.prod.yml restart app
 ```
 
 **Instance reboots — also automatic**, as long as `systemctl enable
@@ -128,14 +128,14 @@ container with `restart: unless-stopped` starts with it. Confirm:
 
 ```bash
 sudo systemctl status docker      # "active (running)"
-docker compose -p opday-ctf -f docker-compose.prod.yml ps   # all "Up"
+docker compose -p internal-ops -f docker-compose.prod.yml ps   # all "Up"
 ```
 
 If Docker shows "disabled," fix it once:
 
 ```bash
 sudo systemctl enable docker
-cd ~/opday-ctf/docker && docker compose -p opday-ctf -f docker-compose.prod.yml up -d
+cd ~/internal-ops/docker && docker compose -p internal-ops -f docker-compose.prod.yml up -d
 ```
 
 **Instance itself is stopped/unreachable — the one case Docker can't
@@ -184,41 +184,61 @@ Build and push by hand instead (CI down, or testing):
 
 ```bash
 docker buildx build --platform linux/amd64 -f docker/Dockerfile \
-  -t aayushop/opday-ctf:<version> -t aayushop/opday-ctf:latest --push .
+  -t aayushop/internal-ops:<version> -t aayushop/internal-ops:latest --push .
 ```
 
 Roll back: set `DOCKER_TAG` in the instance's `docker/.env` to a known-good
 version, then:
 
 ```bash
-docker compose -p opday-ctf -f docker-compose.prod.yml pull app
-docker compose -p opday-ctf -f docker-compose.prod.yml up -d app
+docker compose -p internal-ops -f docker-compose.prod.yml pull app
+docker compose -p internal-ops -f docker-compose.prod.yml up -d app
 ```
 
 ---
 
 ## 5. Backing up game data
 
-Everything lives in one SQLite file inside the `opday_data` volume. It
+> **Migrating an existing deployment from the old `opday-ctf` naming?**
+> The compose project name and volume changed
+> (`opday-ctf_opday_data` → `internal-ops_internal_ops_data`), so pulling
+> these new files on a server that already has a live volume will start
+> against an **empty** database unless you copy the data across first:
+>
+> ```bash
+> docker volume create internal-ops_internal_ops_data
+> docker run --rm \
+>   -v opday-ctf_opday_data:/from \
+>   -v internal-ops_internal_ops_data:/to \
+>   alpine sh -c "cp -a /from/. /to/"
+> ```
+>
+> Run that once, before the first `docker compose -p internal-ops ... up -d`
+> on this host. The old volume is left untouched — remove it yourself once
+> you've confirmed the new one works (`docker volume rm opday-ctf_opday_data`).
+> Anyone with an active session will also need to rejoin once, since the
+> session cookie name changed too (`opday_team_session` → `glitchout_team_session`).
+
+Everything lives in one SQLite file inside the `internal_ops_data` volume. It
 survives restarts/updates on its own — only `docker compose down -v` or
 deleting the volume destroys it. **Never run `down -v`** unless you mean
 to wipe every session.
 
 ```bash
 # Back up
-docker run --rm -v opday_data:/data -v "$PWD":/backup alpine \
-  tar czf /backup/opday-backup-$(date +%F).tar.gz -C /data .
+docker run --rm -v internal_ops_data:/data -v "$PWD":/backup alpine \
+  tar czf /backup/internal-ops-backup-$(date +%F).tar.gz -C /data .
 
 # Restore
-docker run --rm -v opday_data:/data -v "$PWD":/backup alpine \
-  tar xzf /backup/opday-backup-<date>.tar.gz -C /data
+docker run --rm -v internal_ops_data:/data -v "$PWD":/backup alpine \
+  tar xzf /backup/internal-ops-backup-<date>.tar.gz -C /data
 ```
 
 ---
 
 ## 6. Quick command reference
 
-From `~/opday-ctf/docker`. `-p opday-ctf -f docker-compose.prod.yml` implied.
+From `~/internal-ops/docker`. `-p internal-ops -f docker-compose.prod.yml` implied.
 
 | Task | Command |
 |---|---|

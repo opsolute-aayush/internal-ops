@@ -41,7 +41,7 @@ PORT="${PORT:-3000}"
 URL="http://localhost:${PORT}"
 
 echo ""
-echo "==> Starting OP Day CTF"
+echo "==> Starting Internal Ops"
 echo "    App:   ${URL}"
 echo "    Admin: ${URL}/glitch-out/admin"
 echo ""

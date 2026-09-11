@@ -1,12 +1,12 @@
-# OP Day CTF — single image, pull-and-run deployment. Build from the repo
+# Internal Ops — single image, pull-and-run deployment. Build from the repo
 # root (this Dockerfile lives in docker/, but needs the whole repo as its
 # build context):
 #
-#   docker build -f docker/Dockerfile -t opday-ctf .
+#   docker build -f docker/Dockerfile -t internal-ops .
 #   docker run -p 3000:3000 \
 #     -e JWT_SECRET="$(openssl rand -base64 48)" \
-#     -v opday_data:/app/data \
-#     opday-ctf
+#     -v internal_ops_data:/app/data \
+#     internal-ops
 #
 # No admin password to pass in — each game session gets its own, shown once
 # when you create it at /glitch-out/admin. See README.md for the full guide.

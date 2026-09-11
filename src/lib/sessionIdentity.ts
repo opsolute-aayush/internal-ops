@@ -4,8 +4,8 @@
 // straight to the squad list after Leave Team, instead of asking for the
 // code again. Cleared explicitly when the player chooses "Change code".
 
-const STORAGE_KEY = "opday:session-code";
-const EVENT = "opday:session-code-changed";
+const STORAGE_KEY = "glitchout:session-code";
+const EVENT = "glitchout:session-code-changed";
 
 export function getSavedSessionCode(): string {
   if (typeof window === "undefined") return "";

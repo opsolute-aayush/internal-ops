@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import { Volume2, VolumeX, Video, VideoOff, Music, Music4, Play } from "lucide-react";
-import { getSettings, setSettings, subscribeToSettingsStore, DEFAULT_SETTINGS, type OpDaySettings } from "@/lib/settings";
+import { getSettings, setSettings, subscribeToSettingsStore, DEFAULT_SETTINGS, type GlitchOutSettings } from "@/lib/settings";
 import { playRightPasswordSound } from "@/lib/sfx";
 
 function Toggle({ on, onToggle, label }: { on: boolean; onToggle: () => void; label: string }) {
@@ -51,9 +51,9 @@ function Slider({
 
 /** Shared by /settings (players) and the admin dashboard's Sound tab: same device-local prefs either way. */
 export default function AudioVideoSettings() {
-  const settings: OpDaySettings = useSyncExternalStore(subscribeToSettingsStore, getSettings, () => DEFAULT_SETTINGS);
+  const settings: GlitchOutSettings = useSyncExternalStore(subscribeToSettingsStore, getSettings, () => DEFAULT_SETTINGS);
 
-  function update(patch: Partial<OpDaySettings>) {
+  function update(patch: Partial<GlitchOutSettings>) {
     setSettings(patch);
   }
 
