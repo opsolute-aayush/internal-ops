@@ -8,7 +8,7 @@ import type { CSSProperties } from "react";
 const NODES = [
   { top: "6%", left: "4%", text: "0x7F3A9C2E", duration: "5.5s", delay: "0s" },
   { top: "14%", left: "88%", text: "ケアウエオ", duration: "6.5s", delay: "0.9s" },
-  { top: "22%", left: "10%", text: "root@op:~$ ./exec", duration: "7s", delay: "2.1s" },
+  { top: "22%", left: "10%", text: "root@glitchout:~$ ./exec", duration: "7s", delay: "2.1s" },
   { top: "31%", left: "92%", text: "⚠ ERR_ACCESS_DENIED", duration: "6s", delay: "0.4s" },
   { top: "40%", left: "3%", text: "AES-256-GCM", duration: "7.5s", delay: "3s" },
   { top: "48%", left: "90%", text: "0b10110101", duration: "5.8s", delay: "1.6s" },

@@ -10,10 +10,10 @@ import { usePolledFetch } from "@/hooks/usePolledFetch";
 import GlitchTitle from "@/components/GlitchTitle";
 import TerminalPanel from "@/components/TerminalPanel";
 import NeonButton from "@/components/NeonButton";
-import TeamAvatar from "@/components/TeamAvatar";
-import AsciiWinnerPortrait from "@/components/AsciiWinnerPortrait";
-import VideoMonitor from "@/components/VideoMonitor";
-import { ordinal, RANK_STYLE, type TeamStat } from "@/components/TeamStandingsList";
+import TeamAvatar from "@/components/glitch-out/TeamAvatar";
+import AsciiWinnerPortrait from "@/components/glitch-out/AsciiWinnerPortrait";
+import VideoMonitor from "@/components/glitch-out/VideoMonitor";
+import { ordinal, RANK_STYLE, type TeamStat } from "@/components/glitch-out/TeamStandingsList";
 import { playWinFeedback } from "@/lib/gameFeedback";
 
 function formatDuration(ms: number): string {
@@ -32,11 +32,11 @@ export default function WinnerPage() {
   const [playingAgain, setPlayingAgain] = useState(false);
 
   useEffect(() => {
-    if (unauthorized) router.replace("/register");
+    if (unauthorized) router.replace("/glitch-out/register");
   }, [unauthorized, router]);
 
   useEffect(() => {
-    if (status && !status.completed) router.replace("/play");
+    if (status && !status.completed) router.replace("/glitch-out/play");
   }, [status, router]);
 
   useEffect(() => {
@@ -67,7 +67,7 @@ export default function WinnerPage() {
     }
     setPlayingAgain(true);
     await fetch("/api/auth/logout", { method: "POST" });
-    router.replace("/register");
+    router.replace("/glitch-out/register");
   }
 
   const isFirst = status.isFirstToFinish;
@@ -99,7 +99,7 @@ export default function WinnerPage() {
       <div className="relative z-10 flex w-full max-w-5xl flex-col items-center gap-10 md:flex-row md:items-start md:justify-center">
         {/* Left: the interactive ASCII portrait, which sweeps with a continuous
             mesh-line scan and ripples outward from a tap/click. Drop an
-            image into public/arts/winner/ to activate it. Left untouched
+            image into public/glitch-out/arts/winner/ to activate it. Left untouched
             by the glitch-flicker treatment below since it's already alive on its own. */}
         <div className="w-full md:w-2/5 md:sticky md:top-16">
           <AsciiWinnerPortrait accentColor={status.team.color} />

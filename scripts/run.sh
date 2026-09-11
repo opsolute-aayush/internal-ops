@@ -43,7 +43,7 @@ URL="http://localhost:${PORT}"
 echo ""
 echo "==> Starting OP Day CTF"
 echo "    App:   ${URL}"
-echo "    Admin: ${URL}/admin"
+echo "    Admin: ${URL}/glitch-out/admin"
 echo ""
 
 if [[ "$OSTYPE" == "darwin"* ]]; then

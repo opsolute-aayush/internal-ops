@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Trophy, Unlock, Lightbulb, Trash2 } from "lucide-react";
 import TerminalPanel from "@/components/TerminalPanel";
 import NeonButton from "@/components/NeonButton";
-import TeamAvatar from "@/components/TeamAvatar";
+import TeamAvatar from "@/components/glitch-out/TeamAvatar";
 import { usePolledFetch } from "@/hooks/usePolledFetch";
 
 interface LeaderboardRow {

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Skull, ShieldAlert, ShieldCheck } from "lucide-react";
-import CipherInput from "@/components/CipherInput";
+import CipherInput from "@/components/glitch-out/CipherInput";
 import NeonButton from "@/components/NeonButton";
 import type { ActiveSabotage } from "@/hooks/useTeamStatus";
 import { playSabotageDeniedFeedback, playResolveFeedback } from "@/lib/gameFeedback";

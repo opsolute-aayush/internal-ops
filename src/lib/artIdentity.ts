@@ -1,6 +1,6 @@
 "use client";
 
-// Which public/arts/settings/ image this device was randomly assigned.
+// Which public/glitch-out/arts/settings/ image this device was randomly assigned.
 // Picked once and persisted, so the same user keeps seeing the same
 // character-art render across visits instead of it changing on them.
 // Different users (different devices) still land on different images.

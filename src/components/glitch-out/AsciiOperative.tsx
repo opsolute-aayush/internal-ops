@@ -3,9 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { getAssignedArtFile, setAssignedArtFile } from "@/lib/artIdentity";
 
-// Drop image files into public/arts/settings/. No code changes needed:
-// GET /api/arts/settings picks them up automatically (same convention as
-// public/sounds/<category> and public/videos/<category>).
+// Drop image files into public/glitch-out/arts/settings/. No code changes needed:
+// GET /api/glitch-out/arts/settings picks them up automatically (same convention as
+// public/glitch-out/sounds/<category> and public/glitch-out/videos/<category>).
 const CATEGORY = "settings";
 const COLS = 42;
 // Monospace glyphs are taller than they are wide, so fewer rows than cols
@@ -61,7 +61,7 @@ export default function AsciiOperative() {
     let cancelled = false;
 
     async function load() {
-      const res = await fetch(`/api/arts/${CATEGORY}`, { cache: "no-store" }).catch(() => null);
+      const res = await fetch(`/api/glitch-out/arts/${CATEGORY}`, { cache: "no-store" }).catch(() => null);
       const data: { files?: string[] } = res?.ok ? await res.json() : { files: [] };
       const files = data.files ?? [];
       if (cancelled) return;
@@ -85,7 +85,7 @@ export default function AsciiOperative() {
       img.onerror = () => {
         if (!cancelled) setStatus("empty");
       };
-      img.src = `/arts/${CATEGORY}/${encodeURIComponent(file)}`;
+      img.src = `/glitch-out/arts/${CATEGORY}/${encodeURIComponent(file)}`;
     }
 
     load();
@@ -168,7 +168,7 @@ export default function AsciiOperative() {
         </pre>
       ) : (
         status === "empty" && (
-          <p className="text-center text-xs text-neon-100/20">Drop images into public/arts/settings/ to activate.</p>
+          <p className="text-center text-xs text-neon-100/20">Drop images into public/glitch-out/arts/settings/ to activate.</p>
         )
       )}
     </div>

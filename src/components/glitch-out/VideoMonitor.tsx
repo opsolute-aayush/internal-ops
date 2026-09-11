@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Radio } from "lucide-react";
 import TerminalPanel from "@/components/TerminalPanel";
-import ChromaKeyVideo from "@/components/ChromaKeyVideo";
+import ChromaKeyVideo from "@/components/glitch-out/ChromaKeyVideo";
 import { subscribeToVideoClips, type VideoCategory, type VideoClipEventDetail } from "@/lib/videofx";
 
 interface VideoMonitorProps {

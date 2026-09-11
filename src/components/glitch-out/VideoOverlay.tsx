@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { subscribeToVideoClips, VideoClipEventDetail } from "@/lib/videofx";
-import ChromaKeyVideo from "@/components/ChromaKeyVideo";
+import ChromaKeyVideo from "@/components/glitch-out/ChromaKeyVideo";
 
 const MAX_CLIP_MS = 9000;
 

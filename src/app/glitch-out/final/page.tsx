@@ -7,7 +7,7 @@ import { useTeamStatus } from "@/hooks/useTeamStatus";
 import GlitchTitle from "@/components/GlitchTitle";
 import TerminalPanel from "@/components/TerminalPanel";
 import NeonButton from "@/components/NeonButton";
-import SentenceBuilder from "@/components/SentenceBuilder";
+import SentenceBuilder from "@/components/glitch-out/SentenceBuilder";
 
 export default function FinalPage() {
   const router = useRouter();
@@ -22,15 +22,15 @@ export default function FinalPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (unauthorized) router.replace("/register");
+    if (unauthorized) router.replace("/glitch-out/register");
   }, [unauthorized, router]);
 
   useEffect(() => {
-    if (status && !status.finalUnlocked && !status.completed) router.replace("/play");
+    if (status && !status.finalUnlocked && !status.completed) router.replace("/glitch-out/play");
   }, [status, router]);
 
   useEffect(() => {
-    if (status?.completed) router.replace("/winner");
+    if (status?.completed) router.replace("/glitch-out/winner");
   }, [status, router]);
 
   // Seed the reorderable word list once, the first time this team's status arrives
@@ -66,7 +66,7 @@ export default function FinalPage() {
         setSubmitting(false);
         return;
       }
-      router.replace("/winner");
+      router.replace("/glitch-out/winner");
     } catch {
       setError("Network error. Try again.");
       setSubmitting(false);

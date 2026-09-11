@@ -6,7 +6,7 @@ import { Lightbulb, Skull, ChevronDown, Repeat } from "lucide-react";
 import TerminalPanel from "@/components/TerminalPanel";
 import NeonButton from "@/components/NeonButton";
 import InputField from "@/components/InputField";
-import VideoMonitor from "@/components/VideoMonitor";
+import VideoMonitor from "@/components/glitch-out/VideoMonitor";
 import { playHackingFeedback } from "@/lib/gameFeedback";
 import { useOtherTeams, type OtherTeam } from "@/hooks/useOtherTeams";
 

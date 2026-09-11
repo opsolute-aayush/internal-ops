@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { playArtTouchSound } from "@/lib/sfx";
 
-// Same ASCII-from-image pipeline as AsciiOperative (public/arts/<category>/,
+// Same ASCII-from-image pipeline as AsciiOperative (public/glitch-out/arts/<category>/,
 // no code changes to add art), but repurposed as the winner page's hero
 // visual instead of a faint background silhouette: bigger, centered, and
 // interactive. It adds a continuous scanning "mesh line" sweep plus a
@@ -51,7 +51,7 @@ export default function AsciiWinnerPortrait({ accentColor }: { accentColor?: str
     let cancelled = false;
 
     async function load() {
-      const res = await fetch(`/api/arts/${CATEGORY}`, { cache: "no-store" }).catch(() => null);
+      const res = await fetch(`/api/glitch-out/arts/${CATEGORY}`, { cache: "no-store" }).catch(() => null);
       const data: { files?: string[] } = res?.ok ? await res.json() : { files: [] };
       const files = data.files ?? [];
       if (cancelled) return;
@@ -69,7 +69,7 @@ export default function AsciiWinnerPortrait({ accentColor }: { accentColor?: str
       img.onerror = () => {
         if (!cancelled) setStatus("empty");
       };
-      img.src = `/arts/${CATEGORY}/${encodeURIComponent(file)}`;
+      img.src = `/glitch-out/arts/${CATEGORY}/${encodeURIComponent(file)}`;
     }
 
     load();
@@ -156,7 +156,7 @@ export default function AsciiWinnerPortrait({ accentColor }: { accentColor?: str
   if (status === "empty") {
     return (
       <p className="py-6 text-center text-xs text-neon-100/25">
-        Drop a portrait image into public/arts/winner/ to activate this effect.
+        Drop a portrait image into public/glitch-out/arts/winner/ to activate this effect.
       </p>
     );
   }

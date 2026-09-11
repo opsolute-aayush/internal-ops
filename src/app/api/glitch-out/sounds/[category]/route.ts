@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { readdir } from "fs/promises";
 import path from "path";
 
-// Lists whatever audio files exist in public/sounds/<category>. Category is
+// Lists whatever audio files exist in public/glitch-out/sounds/<category>. Category is
 // whitelisted so this can't list arbitrary server directories.
 const CATEGORIES = [
   "wrong_pass",
@@ -28,7 +28,7 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ category: 
     return NextResponse.json({ error: "Unknown sound category" }, { status: 404 });
   }
 
-  const dir = path.join(process.cwd(), "public", "sounds", category);
+  const dir = path.join(process.cwd(), "public", "glitch-out", "sounds", category);
 
   try {
     const entries = await readdir(dir, { withFileTypes: true });

@@ -1,8 +1,8 @@
 "use client";
 
-// Sounds auto-discover from public/sounds/<category>/ (wrong_pass, right_pass,
+// Sounds auto-discover from public/glitch-out/sounds/<category>/ (wrong_pass, right_pass,
 // help, winning, intro, outro, button, settings, hacking, alert, resolve, art) via
-// GET /api/sounds/<category>. Drop a file in, no registration needed. The
+// GET /api/glitch-out/sounds/<category>. Drop a file in, no registration needed. The
 // one-shot categories fall back to a synthesized chime when empty; the
 // full-track categories (intro, outro, settings) just stay silent with no assets.
 
@@ -32,7 +32,7 @@ async function getFileList(category: Category): Promise<string[]> {
   const pending = fileListInFlight.get(category);
   if (pending) return pending;
 
-  const promise = fetch(`/api/sounds/${category}`, { cache: "no-store" })
+  const promise = fetch(`/api/glitch-out/sounds/${category}`, { cache: "no-store" })
     .then((res) => (res.ok ? res.json() : { files: [] }))
     .then((data: { files?: string[] }) => {
       const files = data.files ?? [];
@@ -66,7 +66,7 @@ const lastPlayed: Record<Category, string | null> = {
 
 function playFile(category: Category, filename: string, volume: number) {
   try {
-    const audio = new Audio(`/sounds/${category}/${encodeURIComponent(filename)}`);
+    const audio = new Audio(`/glitch-out/sounds/${category}/${encodeURIComponent(filename)}`);
     audio.volume = volume;
     void audio.play().catch(() => {
       // Autoplay can be blocked before any user gesture has landed. Safe to ignore.
@@ -290,7 +290,7 @@ function createLoopingMusicChannel(category: Category) {
     if (files.length === 0) return;
     const filename = files[Math.floor(Math.random() * files.length)];
     try {
-      const el = new Audio(`/sounds/${category}/${encodeURIComponent(filename)}`);
+      const el = new Audio(`/glitch-out/sounds/${category}/${encodeURIComponent(filename)}`);
       el.loop = true;
       el.volume = baseVolume * settings.musicVolume;
       audio = el;

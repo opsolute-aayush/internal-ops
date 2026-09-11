@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Crown, Medal } from "lucide-react";
-import TeamAvatar from "@/components/TeamAvatar";
+import TeamAvatar from "@/components/glitch-out/TeamAvatar";
 
 export interface TeamStat {
   teamNumber: number;

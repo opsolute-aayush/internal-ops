@@ -4,8 +4,8 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { X, Lock, Unlock, ShieldAlert, ShieldCheck } from "lucide-react";
 import NeonButton from "@/components/NeonButton";
-import CipherInput from "@/components/CipherInput";
-import MatrixRain from "@/components/MatrixRain";
+import CipherInput from "@/components/glitch-out/CipherInput";
+import MatrixRain from "@/components/glitch-out/MatrixRain";
 import { playWrongPasswordFeedback, playRightFeedback } from "@/lib/gameFeedback";
 
 interface PasswordModalProps {

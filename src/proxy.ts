@@ -5,7 +5,7 @@ import { TEAM_COOKIE, verifyTeamToken } from "@/lib/jwt";
 // UX-level route guarding only. Every API route re-validates the team/admin
 // session and game state server-side. This just avoids flashing protected
 // pages to a browser with no session before the client redirects.
-const PROTECTED_PREFIXES = ["/play", "/final", "/winner"];
+const PROTECTED_PREFIXES = ["/glitch-out/play", "/glitch-out/final", "/glitch-out/winner"];
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -14,17 +14,17 @@ export function proxy(request: NextRequest) {
 
   if (PROTECTED_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
     if (!team) {
-      return NextResponse.redirect(new URL("/register", request.url));
+      return NextResponse.redirect(new URL("/glitch-out/register", request.url));
     }
   }
 
-  if (pathname === "/register" && team) {
-    return NextResponse.redirect(new URL("/play", request.url));
+  if (pathname === "/glitch-out/register" && team) {
+    return NextResponse.redirect(new URL("/glitch-out/play", request.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/play/:path*", "/final/:path*", "/winner/:path*", "/register"],
+  matcher: ["/glitch-out/play/:path*", "/glitch-out/final/:path*", "/glitch-out/winner/:path*", "/glitch-out/register"],
 };

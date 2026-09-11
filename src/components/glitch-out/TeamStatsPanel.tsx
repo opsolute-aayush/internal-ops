@@ -2,7 +2,7 @@
 
 import { Radio } from "lucide-react";
 import TerminalPanel from "@/components/TerminalPanel";
-import TeamStandingsList, { type TeamStat } from "@/components/TeamStandingsList";
+import TeamStandingsList, { type TeamStat } from "@/components/glitch-out/TeamStandingsList";
 import { usePolledFetch } from "@/hooks/usePolledFetch";
 
 export default function TeamStatsPanel({ highlightTeamNumber }: { highlightTeamNumber?: number }) {

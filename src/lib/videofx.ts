@@ -1,6 +1,6 @@
 "use client";
 
-// Video clips auto-discover from public/videos/<category>/ the same way
+// Video clips auto-discover from public/glitch-out/videos/<category>/ the same way
 // sfx.ts does for sounds. winning/ clips are green-screen, chroma-keyed
 // live by VideoOverlay rather than played as a plain rectangle.
 
@@ -25,7 +25,7 @@ async function getFileList(category: VideoCategory): Promise<string[]> {
   const pending = fileListInFlight.get(category);
   if (pending) return pending;
 
-  const promise = fetch(`/api/videos/${category}`, { cache: "no-store" })
+  const promise = fetch(`/api/glitch-out/videos/${category}`, { cache: "no-store" })
     .then((res) => (res.ok ? res.json() : { files: [] }))
     .then((data: { files?: string[] }) => {
       const files = data.files ?? [];
@@ -50,7 +50,7 @@ const lastPlayed: Record<VideoCategory, string | null> = {
 };
 
 /**
- * Picks a random clip from public/videos/<category> and broadcasts it via a
+ * Picks a random clip from public/glitch-out/videos/<category> and broadcasts it via a
  * window event. VideoOverlay (mounted once in the root layout) is the sole
  * listener and actually renders it. This function never touches the DOM
  * itself, so it's safe to call from anywhere (modals, pages, hooks).
@@ -65,7 +65,7 @@ export async function playVideoClip(category: VideoCategory) {
   const filename = candidates[Math.floor(Math.random() * candidates.length)];
   lastPlayed[category] = filename;
 
-  const src = `/videos/${category}/${encodeURIComponent(filename)}`;
+  const src = `/glitch-out/videos/${category}/${encodeURIComponent(filename)}`;
   window.dispatchEvent(new CustomEvent<VideoClipEventDetail>(VIDEO_EVENT, { detail: { category, src } }));
 }
 

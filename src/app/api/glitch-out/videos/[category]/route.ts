@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { readdir } from "fs/promises";
 import path from "path";
 
-// Mirrors /api/sounds/[category] for public/videos/<category>.
+// Mirrors /api/glitch-out/sounds/[category] for public/glitch-out/videos/<category>.
 const CATEGORIES = ["wrong_pass", "right_pass", "help", "winning"] as const;
 type Category = (typeof CATEGORIES)[number];
 
@@ -14,7 +14,7 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ category: 
     return NextResponse.json({ error: "Unknown video category" }, { status: 404 });
   }
 
-  const dir = path.join(process.cwd(), "public", "videos", category);
+  const dir = path.join(process.cwd(), "public", "glitch-out", "videos", category);
 
   try {
     const entries = await readdir(dir, { withFileTypes: true });
