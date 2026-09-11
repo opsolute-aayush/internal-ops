@@ -18,13 +18,21 @@ version = os.environ["RELEASE_VERSION"]
 log = os.environ["RELEASE_LOG"]
 
 path = pathlib.Path("docs/CHANGELOG.md")
-text = path.read_text()
+text = path.read_text() if path.exists() else "# Changelog\n"
 today = datetime.date.today().isoformat()
 entry = f"## [{version}] - {today}\n\n### Changes\n{log}\n\n"
 
-marker = "Newest at the top.\n"
-idx = text.index(marker) + len(marker)
-rest = text[idx:].lstrip("\n")  # drop the existing blank line before the first entry
-new_text = text[:idx] + "\n" + entry + rest
+# Insert right after the first line (the "# Changelog" title) — deliberately
+# NOT anchored to any specific sentence of intro prose. An earlier version
+# of this script searched for a marker string in that prose, which broke
+# the moment someone edited the file's intro text by hand (exactly what
+# happened: a manual edit removed the sentence this script was looking
+# for, and the release workflow failed on the next run). The title line is
+# a much safer anchor — it's the one thing this file is guaranteed to keep.
+lines = text.splitlines(keepends=True)
+if not lines:
+    lines = ["# Changelog\n"]
+title, rest = lines[0], lines[1:]
+new_text = title + "\n" + entry + "".join(rest).lstrip("\n")
 
 path.write_text(new_text)
